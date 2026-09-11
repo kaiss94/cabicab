@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Grille tarifaire CABICAB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1a2b4a; --navy2: #233660; --slate: #4a5e7a;
+      --gold: #c8a85a; --gold2: #e0c278;
+      --light: #f5f7fa; --white: #fff; --gray: #7a8a9a;
+      --border: #d9e2ec; --green: #22a06b; --red: #e53e3e;
+      --shadow: 0 4px 24px rgba(26,43,74,0.12); --radius: 10px;
+      --font: 'Inter', sans-serif; --font-d: 'Playfair Display', serif;
+    }
+    body { font-family: var(--font); background: var(--light); color: var(--navy); min-height: 100vh; }
+
+    /* ── Login screen ── */
+    #loginScreen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+    }
+    .login-card {
+      background: var(--white); border-radius: 16px;
+      padding: 44px 40px; width: 100%; max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .login-logo { font-family: var(--font-d); font-size: 1.8rem; color: var(--navy); margin-bottom: 6px; }
+    .login-logo span { color: var(--gold); }
+    .login-sub { color: var(--slate); font-size: 0.88rem; margin-bottom: 32px; }
+    .login-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--slate); margin-bottom: 6px; text-align: left; }
+    .login-input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.95rem; font-family: var(--font);
+      outline: none; transition: border-color .2s; color: var(--navy);
+      letter-spacing: 0.12em; margin-bottom: 16px;
+    }
+    .login-input:focus { border-color: var(--navy2); }
+    .login-btn {
+      width: 100%; padding: 13px; background: var(--gold); border: none;
+      border-radius: var(--radius); font-weight: 700; font-size: 0.97rem;
+      color: var(--navy); cursor: pointer; transition: background .2s;
+    }
+    .login-btn:hover { background: var(--gold2); }
+    .login-error { color: var(--red); font-size: 0.82rem; margin-top: 10px; display: none; }
+
+    /* ── Admin shell ── */
+    #adminShell { display: none; }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--navy); padding: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; padding: 0 28px;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-logo { font-family: var(--font-d); font-size: 1.3rem; color: #fff; }
+    .topbar-logo span { color: var(--gold); }
+    .topbar-title { color: rgba(255,255,255,0.65); font-size: 0.85rem; }
+    .topbar-right { display: flex; gap: 12px; align-items: center; }
+    .btn-sm {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 7px; font-size: 0.83rem;
+      font-weight: 600; cursor: pointer; border: none; transition: all .15s;
+      font-family: var(--font);
+    }
+    .btn-save  { background: var(--gold); color: var(--navy); }
+    .btn-save:hover { background: var(--gold2); }
+    .btn-reset { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.80); border: 1px solid rgba(255,255,255,0.15); }
+    .btn-reset:hover { background: rgba(255,255,255,0.18); }
+    .btn-logout { background: transparent; color: rgba(255,255,255,0.55); border: none; font-size: 0.82rem; cursor: pointer; }
+    .btn-logout:hover { color: var(--gold2); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1a2b4a; color: #fff; padding: 12px 24px; border-radius: 30px;
+      font-size: 0.88rem; font-weight: 600; opacity: 0; transition: all .3s;
+      z-index: 999; pointer-events: none; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { background: var(--green); }
+    #toast.error   { background: var(--red); }
+
+    /* ── Main content ── */
+    .admin-main { max-width: 1000px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    /* ── Section header ── */
+    .section-head { margin-bottom: 20px; }
+    .section-head h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .section-head p  { font-size: 0.83rem; color: var(--slate); }
+
+    /* ── Price table ── */
+    .price-table-wrap {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
+      margin-bottom: 32px;
+    }
+    .pt-header {
+      display: grid; grid-template-columns: 1fr 130px 130px 130px;
+      background: var(--navy); color: #fff;
+      font-size: 0.82rem; font-weight: 700;
+      padding: 12px 20px; gap: 8px;
+    }
+    .pt-header .col-veh { text-align: center; }
+    .pt-row {
+      display: grid; grid-template-columns: 1fr 130px 130px 130px;
+      padding: 10px 20px; gap: 8px; align-items: center;
+      border-bottom: 1px solid var(--border); transition: background .12s;
+    }
+    .pt-row:last-child { border-bottom: none; }
+    .pt-row:hover { background: #fafcff; }
+    .pt-row.modified { background: #fffbf0; }
+    .route-label { font-size: 0.88rem; font-weight: 600; color: var(--navy); }
+    .route-label small { display: block; font-weight: 400; color: var(--gray); font-size: 0.75rem; margin-top: 1px; }
+    .price-cell { display: flex; align-items: center; gap: 6px; justify-content: center; }
+    .price-input {
+      width: 72px; padding: 7px 10px; text-align: right;
+      border: 1.5px solid var(--border); border-radius: 7px;
+      font-size: 0.92rem; font-weight: 600; color: var(--navy);
+      font-family: var(--font); outline: none; transition: border-color .2s;
+    }
+    .price-input:focus { border-color: var(--navy2); }
+    .price-input.changed { border-color: var(--gold); background: #fffbf0; }
+    .euro-sign { color: var(--gray); font-size: 0.85rem; }
+
+    /* ── Category divider ── */
+    .pt-category {
+      background: var(--light); border-bottom: 1px solid var(--border);
+      padding: 8px 20px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--slate);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon { font-size: 1.6rem; }
+    .stat-val  { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; color: var(--navy); line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: var(--slate); margin-top: 3px; }
+
+    /* ── Export/import ── */
+    .tools-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .btn-tool {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px; font-size: 0.83rem;
+      font-weight: 600; cursor: pointer; border: 1.5px solid var(--border);
+      background: var(--white); color: var(--navy); font-family: var(--font);
+      transition: all .15s;
+    }
+    .btn-tool:hover { background: var(--light); border-color: #b0c4dc; }
+
+    @media (max-width: 640px) {
+      .pt-header, .pt-row { grid-template-columns: 1fr 90px 90px 90px; padding: 10px 12px; gap: 4px; }
+      .price-input { width: 58px; font-size: 0.85rem; }
+      .stats-row { grid-template-columns: 1fr; }
+      .topbar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Login ────────────────────────────────────────────────── -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">CABI<span>CAB</span></div>
+    <div class="login-sub">Interface d'administration</div>
+    <label class="login-label" for="pwdInput">Mot de passe</label>
+    <input class="login-input" type="password" id="pwdInput"
+           placeholder="••••••••" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') login()" />
+    <button class="login-btn" onclick="login()">🔐 Connexion</button>
+    <div class="login-error" id="loginError">Mot de passe incorrect.</div>
+  </div>
+</div>
+
+<!-- ── Admin shell ──────────────────────────────────────────── -->
+<div id="adminShell">
+
+  <div class="topbar">
+    <div>
+      <span class="topbar-logo">CABI<span>CAB</span></span>
+      <span class="topbar-title"> · Admin tarifaire</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-sm btn-reset" onclick="confirmReset()">↺ Réinitialiser</button>
+      <button class="btn-sm btn-save"  onclick="saveAll()">💾 Sauvegarder</button>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="admin-main">
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- Tools -->
+    <div class="section-head">
+      <h2>Grille tarifaire</h2>
+      <p>Modifiez les prix puis cliquez sur "Sauvegarder". Les changements sont appliqués immédiatement sur toutes les pages du site.</p>
+    </div>
+    <div class="tools-row">
+      <button class="btn-tool" onclick="exportJSON()">⬇️ Exporter JSON</button>
+      <button class="btn-tool" onclick="document.getElementById('importFile').click()">⬆️ Importer JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+    </div>
+
+    <!-- Price table -->
+    <div class="price-table-wrap">
+      <div class="pt-header">
+        <div>Trajet</div>
+        <div class="col-veh">🚗 Berline</div>
+        <div class="col-veh">🚙 SUV</div>
+        <div class="col-veh">🚐 VAN</div>
+      </div>
+      <div id="priceTableBody">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="shared.js"></script>
+<script>
+// ── Auth ─────────────────────────────────────────────────────
+const ADMIN_PWD = 'cabicab2025'; // ⚠️ À changer en production
+
+function login() {
+  const pwd = document.getElementById('pwdInput').value;
+  if (pwd === ADMIN_PWD) {
+    sessionStorage.setItem('cabicab_admin', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminShell').style.display = 'block';
+    renderAll();
+  } else {
+    const err = document.getElementById('loginError');
+    err.style.display = 'block';
+    document.getElementById('pwdInput').focus();
+    setTimeout(() => err.style.display = 'none', 3000);
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('cabicab_admin');
+  location.reload();
+}
+
+// Auto-login si déjà connecté dans la session
+if (sessionStorage.getItem('cabicab_admin') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminShell').style.display = 'block';
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(() => t.className = '', 2800);
+}
+
+// ── Routes groupées ───────────────────────────────────────────
+const ROUTE_GROUPS = [
+  {
+    title: '✈️ Paris → Aéroports',
+    routes: ['PARIS-CDG', 'PARIS-ORLY', 'PARIS-BEAUVAIS'],
+  },
+  {
+    title: '🔁 Inter-Aéroports',
+    routes: ['CDG-ORLY'],
+  },
+  {
+    title: '🎡 Paris → Parcs & Loisirs',
+    routes: ['PARIS-DISNEY', 'PARIS-ASTERIX'],
+  },
+  {
+    title: '🎡 CDG → Parcs',
+    routes: ['CDG-DISNEY', 'CDG-ASTERIX'],
+  },
+  {
+    title: '🎡 Orly → Parcs',
+    routes: ['ORLY-DISNEY', 'ORLY-ASTERIX'],
+  },
+  {
+    title: '🎡 Beauvais → Parcs',
+    routes: ['BEAUVAIS-DISNEY', 'BEAUVAIS-ASTERIX'],
+  },
+  {
+    title: '🏙️ Paris → Destinations proches',
+    routes: ['PARIS-VERSAILLES', 'PARIS-LADEFENSE', 'PARIS-GARE'],
+  },
+  {
+    title: '🏠 Paris → Paris (intra-muros)',
+    routes: ['PARIS-PARIS'],
+  },
+  {
+    title: '🗺️ Paris → Petite Couronne',
+    routes: ['PARIS-DEP92', 'PARIS-DEP93', 'PARIS-DEP94'],
+  },
+  {
+    title: '🗺️ Paris → Grande Couronne',
+    routes: ['PARIS-DEP77', 'PARIS-DEP78', 'PARIS-DEP91', 'PARIS-DEP95'],
+  },
+];
+
+// Inputs en cours de modification
+const dirty = new Set();
+let currentPrices = {};
+
+// ── Render ────────────────────────────────────────────────────
+function renderAll() {
+  currentPrices = getPrices();
+  renderStats();
+  renderTable();
+}
+
+function renderStats() {
+  const routes = Object.keys(DEFAULT_PRICES).length;
+  const saved  = localStorage.getItem(LS_KEY);
+  const modified = saved ? Object.keys(JSON.parse(saved)).length : 0;
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card">
+      <span class="stat-icon">🗺️</span>
+      <div>
+        <div class="stat-val">${routes}</div>
+        <div class="stat-label">Trajets configurés</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">✏️</span>
+      <div>
+        <div class="stat-val">${modified}</div>
+        <div class="stat-label">Tarifs personnalisés</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🚗</span>
+      <div>
+        <div class="stat-val">3</div>
+        <div class="stat-label">Catégories de véhicule</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTable() {
+  const body = document.getElementById('priceTableBody');
+  body.innerHTML = '';
+
+  ROUTE_GROUPS.forEach(group => {
+    // Category divider
+    const cat = document.createElement('div');
+    cat.className = 'pt-category';
+    cat.textContent = group.title;
+    body.appendChild(cat);
+
+    group.routes.forEach(routeKey => {
+      const def   = DEFAULT_PRICES[routeKey];
+      const cur   = currentPrices[routeKey] || def;
+      const label = ROUTE_LABELS[routeKey] || routeKey;
+
+      const row = document.createElement('div');
+      row.className = 'pt-row';
+      row.id = 'row-' + routeKey;
+
+      ['b', 's', 'v'].forEach(k => {
+        const defVal = def[k];
+        const curVal = cur[k];
+        const isChanged = curVal !== defVal;
+        if (isChanged) row.classList.add('modified');
+
+        const cell = document.createElement('div');
+        cell.className = 'price-cell';
+        cell.innerHTML = `
+          <input class="price-input ${isChanged ? 'changed' : ''}"
+                 type="number" min="0" max="9999" step="1"
+                 value="${curVal}"
+                 id="inp-${routeKey}-${k}"
+                 data-route="${routeKey}" data-key="${k}" data-default="${defVal}"
+                 onchange="onPriceChange(this)"
+                 oninput="onPriceInput(this)" />
+          <span class="euro-sign">€</span>
+        `;
+        row.appendChild(cell);
+      });
+
+      // Route label (first column — inserted before the 3 price cells)
+      const labelEl = document.createElement('div');
+      labelEl.className = 'route-label';
+      labelEl.innerHTML = label + `<small>Tarif par défaut : Berline ${def.b}€ · SUV ${def.s}€ · VAN ${def.v}€</small>`;
+      row.insertBefore(labelEl, row.firstChild);
+
+      body.appendChild(row);
+    });
+  });
+}
+
+function onPriceInput(el) {
+  const defVal = parseInt(el.dataset.default);
+  const newVal = parseInt(el.value);
+  el.classList.toggle('changed', !isNaN(newVal) && newVal !== defVal);
+  dirty.add(el.dataset.route + '-' + el.dataset.key);
+}
+
+function onPriceChange(el) {
+  const routeKey = el.dataset.route;
+  const k = el.dataset.key;
+  let val = parseInt(el.value);
+  if (isNaN(val) || val < 0) { el.value = DEFAULT_PRICES[routeKey][k]; return; }
+  el.value = val;
+  // Update row modified state
+  const row = document.getElementById('row-' + routeKey);
+  const anyChanged = ['b','s','v'].some(key => {
+    const inp = document.getElementById(`inp-${routeKey}-${key}`);
+    return inp && parseInt(inp.value) !== DEFAULT_PRICES[routeKey][key];
+  });
+  row.classList.toggle('modified', anyChanged);
+}
+
+// ── Save ──────────────────────────────────────────────────────
+function saveAll() {
+  const newPrices = {};
+  let hasChanges = false;
+
+  Object.keys(DEFAULT_PRICES).forEach(routeKey => {
+    const b = parseInt(document.getElementById(`inp-${routeKey}-b`)?.value);
+    const s = parseInt(document.getElementById(`inp-${routeKey}-s`)?.value);
+    const v = parseInt(document.getElementById(`inp-${routeKey}-v`)?.value);
+    const def = DEFAULT_PRICES[routeKey];
+
+    if (b !== def.b || s !== def.s || v !== def.v) {
+      newPrices[routeKey] = {
+        b: isNaN(b) ? def.b : b,
+        s: isNaN(s) ? def.s : s,
+        v: isNaN(v) ? def.v : v,
+      };
+      hasChanges = true;
+    }
+  });
+
+  if (hasChanges) {
+    savePrices(newPrices);
+    showToast('✅ Tarifs sauvegardés avec succès');
+  } else {
+    // All same as default → clear localStorage
+    resetPrices();
+    showToast('✅ Tarifs réinitialisés aux valeurs par défaut');
+  }
+  dirty.clear();
+  renderStats();
+}
+
+// ── Reset ─────────────────────────────────────────────────────
+function confirmReset() {
+  if (!confirm('Réinitialiser tous les tarifs aux valeurs par défaut ?')) return;
+  resetPrices();
+  currentPrices = getPrices();
+  renderTable();
+  renderStats();
+  showToast('↺ Tarifs réinitialisés', 'success');
+}
+
+// ── Export / Import JSON ──────────────────────────────────────
+function exportJSON() {
+  const prices = getPrices();
+  const blob = new Blob([JSON.stringify(prices, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'cabicab_tarifs.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Export téléchargé');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Validate structure
+      const keys = Object.keys(DEFAULT_PRICES);
+      const valid = keys.every(k => data[k] && typeof data[k].b === 'number');
+      if (!valid) { showToast('❌ Fichier invalide', 'error'); return; }
+      savePrices(data);
+      currentPrices = getPrices();
+      renderTable();
+      renderStats();
+      showToast('⬆️ Tarifs importés avec succès');
+    } catch (err) {
+      showToast('❌ Erreur de lecture du fichier', 'error');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── Init ──────────────────────────────────────────────────────
+if (sessionStorage.getItem('cabicab_admin') === '1') renderAll();
+</script>
+</body>
+</html>

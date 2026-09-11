@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Réserver un VTC à Paris — Options & Tarifs | CABICAB</title>
+  <meta name="description" content="Choisissez votre VTC parmi les options disponibles : berline, SUV ou VAN. Prix fixe garanti, réservation via WhatsApp en quelques secondes." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://cabicab.fr/reservation.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cabicab.fr/reservation.html" />
+  <meta property="og:title" content="Réserver un VTC à Paris — CABICAB" />
+  <meta property="og:description" content="Sélectionnez votre option de transport et réservez en quelques secondes via WhatsApp." />
+  <meta property="og:site_name" content="CABICAB" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:  #1a2b4a; --navy2: #233660; --slate: #4a5e7a;
+      --gold:  #c8a85a; --gold2: #e0c278;
+      --light: #f5f7fa; --white: #ffffff; --gray: #7a8a9a;
+      --border: #d9e2ec; --green: #22a06b; --green-bg: #f0faf6;
+      --shadow: 0 4px 24px rgba(26,43,74,0.10); --radius: 12px;
+      --font-body: 'Inter', sans-serif;
+      --font-display: 'Playfair Display', serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); color: var(--navy); background: var(--light); min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── Nav ── */
+    nav {
+      background: rgba(26,43,74,0.97); position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; max-width: 900px; margin: 0 auto; padding: 0 20px;
+    }
+    .nav-logo { font-family: var(--font-display); font-size: 1.4rem; color: #fff; }
+    .nav-logo span { color: var(--gold); }
+    .nav-back {
+      display: flex; align-items: center; gap: 7px;
+      color: rgba(255,255,255,0.70); font-size: 0.87rem; font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--gold2); }
+
+    /* ── Trip summary bar ── */
+    .trip-bar {
+      background: var(--navy);
+      padding: 20px 0;
+    }
+    .trip-bar-inner {
+      display: flex; align-items: center; gap: 0;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .trip-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; padding: 8px 14px;
+      color: var(--white); font-size: 0.88rem;
+    }
+    .trip-chip strong { color: var(--gold2); }
+    .trip-chip .chip-label { color: rgba(255,255,255,0.50); font-size: 0.75rem; margin-bottom: 1px; }
+    .trip-chip-col { display: flex; flex-direction: column; }
+    .trip-arrow { color: var(--gold); font-size: 1.1rem; }
+    .edit-link {
+      margin-left: auto; color: rgba(255,255,255,0.55); font-size: 0.82rem;
+      text-decoration: underline; cursor: pointer; transition: color .2s;
+    }
+    .edit-link:hover { color: var(--gold2); }
+
+    /* ── Main content ── */
+    main { padding: 36px 0 60px; }
+    .page-intro { margin-bottom: 28px; }
+    .page-intro h1 { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.9rem); color: var(--navy); margin-bottom: 6px; }
+    .page-intro p { color: var(--slate); font-size: 0.95rem; }
+
+    /* ── Needs badge ── */
+    .needs-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .need-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 0.85rem; font-weight: 600; color: var(--navy);
+    }
+
+    /* ── Options grid ── */
+    .options-grid { display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Option card ── */
+    .option-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .option-card:hover { box-shadow: var(--shadow); border-color: #b0c4dc; }
+    .option-card.recommended {
+      border-color: var(--gold);
+      box-shadow: 0 4px 24px rgba(200,168,90,0.18);
+    }
+
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+    }
+    .card-label { font-weight: 700; font-size: 0.92rem; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+    .badge-recommended {
+      background: var(--gold); color: var(--navy);
+      font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+    .badge-eco {
+      background: var(--green-bg); color: var(--green);
+      border: 1px solid rgba(34,160,107,0.25);
+      font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    }
+    .badge-space {
+      background: #eef2fb; color: var(--navy2);
+      border: 1px solid rgba(35,54,96,0.2);
+      font-size: 0.7rem; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    }
+
+    .card-body { padding: 20px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+
+    /* Vehicles list */
+    .vehicles-list { display: flex; gap: 12px; flex-wrap: wrap; flex: 1; min-width: 0; }
+    .vehicle-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--light); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 12px 16px;
+      min-width: 130px;
+    }
+    .vehicle-pill .vp-icon { font-size: 1.8rem; }
+    .vehicle-pill .vp-name { font-weight: 700; font-size: 0.9rem; color: var(--navy); }
+    .vehicle-pill .vp-cap { font-size: 0.76rem; color: var(--slate); margin-top: 2px; }
+    .vehicle-plus { font-size: 1.2rem; color: var(--slate); display: flex; align-items: center; align-self: center; }
+
+    /* Capacity + price block */
+    .card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+    .cap-badges { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
+    .cap-badge {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--light); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 0.78rem; color: var(--slate);
+      padding: 4px 10px;
+    }
+    .price-block { text-align: right; }
+    .price-total {
+      font-family: var(--font-display);
+      font-size: 1.7rem; font-weight: 700; color: var(--navy); line-height: 1;
+    }
+    .price-total .price-unit { font-size: 1rem; font-weight: 500; }
+    .price-devis { font-family: var(--font-display); font-size: 1.1rem; color: var(--slate); }
+    .price-breakdown { font-size: 0.75rem; color: var(--gray); margin-top: 3px; text-align: right; }
+
+    /* CTA */
+    .card-footer {
+      padding: 14px 24px;
+      background: var(--light);
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+    .btn-whatsapp {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #25D366; color: white;
+      font-weight: 700; font-size: 0.9rem;
+      padding: 11px 22px; border-radius: var(--radius);
+      transition: all .2s; border: none; cursor: pointer;
+    }
+    .btn-whatsapp:hover { background: #1ebe5a; transform: translateY(-1px); }
+    .btn-phone {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: transparent; color: var(--navy);
+      font-weight: 600; font-size: 0.88rem;
+      padding: 11px 18px; border-radius: var(--radius);
+      border: 2px solid var(--border); transition: all .2s; cursor: pointer;
+    }
+    .btn-phone:hover { border-color: var(--navy); }
+    .btn-pay {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--navy); color: var(--gold);
+      font-weight: 700; font-size: 0.9rem;
+      padding: 11px 22px; border-radius: var(--radius);
+      transition: all .2s; border: none; cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-pay:hover { background: var(--navy2); transform: translateY(-1px); }
+    .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── No route notice ── */
+    .devis-notice {
+      background: #fffbf0; border: 1.5px solid #ead98a;
+      border-radius: var(--radius); padding: 16px 20px;
+      display: flex; gap: 12px; align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    .devis-notice-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+    .devis-notice p { font-size: 0.88rem; color: #7a6020; line-height: 1.55; }
+    .devis-notice strong { color: #5a4010; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state .es-icon { font-size: 3rem; margin-bottom: 14px; }
+    .empty-state h3 { color: var(--navy); margin-bottom: 8px; }
+    .empty-state p { color: var(--slate); font-size: 0.93rem; }
+
+    /* ── Note footer ── */
+    .page-note {
+      margin-top: 32px; padding: 18px 20px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex; gap: 20px; flex-wrap: wrap;
+      font-size: 0.82rem; color: var(--slate);
+    }
+    .page-note span { display: flex; align-items: center; gap: 6px; }
+
+    @media (max-width: 640px) {
+      .card-body { flex-direction: column; align-items: flex-start; }
+      .card-right { align-items: flex-start; width: 100%; }
+      .cap-badges { justify-content: flex-start; }
+      .price-block { text-align: left; }
+      .card-footer { flex-direction: column; }
+      .btn-whatsapp, .btn-phone { justify-content: center; }
+      .trip-bar-inner { gap: 8px; }
+      .edit-link { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ───────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">CABI<span>CAB</span></a>
+    <a href="index.html#reservation" class="nav-back" data-i18n="res.back">← Retour</a>
+  </div>
+</nav>
+
+<!-- ── Trip bar ──────────────────────────────────────────── -->
+<div class="trip-bar">
+  <div class="container">
+    <div class="trip-bar-inner" id="tripBar">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ── Main ──────────────────────────────────────────────── -->
+<main>
+  <div class="container">
+    <div class="page-intro">
+      <h1 id="pageTitle">Options disponibles</h1>
+      <p id="pageSubtitle">Choisissez la combinaison qui correspond à votre groupe.</p>
+    </div>
+
+    <div class="needs-row" id="needsRow">
+      <!-- Filled by JS -->
+    </div>
+
+    <div id="devisNotice" style="display:none" class="devis-notice">
+      <div class="devis-notice-icon">💡</div>
+      <p>
+        <strong>Trajet non reconnu automatiquement.</strong> Les prix affichés sont indicatifs.
+        Contactez-nous pour un tarif exact — réponse sous 30 minutes.
+      </p>
+    </div>
+
+    <div class="options-grid" id="optionsGrid">
+      <!-- Cards filled by JS -->
+    </div>
+
+    <div class="page-note">
+      <span>✅ Prix fixes garantis</span>
+      <span>⏱ Attente offerte 45 min (aéroports)</span>
+      <span>📶 Wi-Fi &amp; eau à bord</span>
+      <span>🧾 Facture disponible sur demande</span>
+    </div>
+  </div>
+</main>
+
+<script src="shared.js"></script>
+<script src="i18n.js"></script>
+<script>
+// V_MAP already defined in shared.js
+
+// PRICES, findRouteKey, vehiclePrice → shared.js
+
+// ── Combination generator ────────────────────────────────────
+function generateCombinations(needPax, needBags) {
+  const seen = new Set();
+  const results = [];
+
+  function tryBuild(combo, remPax, remBags, slots) {
+    if (remPax <= 0 && remBags <= 0) {
+      const key = [...combo].sort().join(',');
+      if (!seen.has(key)) { seen.add(key); results.push([...combo]); }
+      return;
+    }
+    if (slots === 0) return;
+    // Only add vehicles that won't massively overshoot (avoid 3×VAN for 3 pax)
+    for (const v of VEHICLES) {
+      const totalPaxIfAdd = combo.reduce((s, id) => s + V_MAP[id].pax, 0) + v.pax;
+      const totalBagIfAdd = combo.reduce((s, id) => s + V_MAP[id].bags, 0) + v.bags;
+      // Don't add if this vehicle alone already satisfies and we already have a result
+      // Allow up to 3× excess capacity max
+      if (totalPaxIfAdd <= needPax * 3 + 4 && totalBagIfAdd <= needBags * 3 + 4) {
+        combo.push(v.id);
+        tryBuild(combo, remPax - v.pax, remBags - v.bags, slots - 1);
+        combo.pop();
+      }
+    }
+  }
+
+  tryBuild([], needPax, needBags, 1);
+  tryBuild([], needPax, needBags, 2);
+  tryBuild([], needPax, needBags, 3);
+  return results;
+}
+
+// ── Card label & badge ───────────────────────────────────────
+function cardMeta(combo, index, totalPrice, allPrices) {
+  const ids = combo;
+  const sorted = allPrices.filter(p => p !== null).sort((a,b) => a-b);
+  const isLowest = totalPrice !== null && totalPrice === sorted[0];
+  const hasVan = ids.includes('van');
+  const count = ids.length;
+
+  let label = '';
+  if (count === 1) {
+    const v = V_MAP[ids[0]];
+    label = v.icon + ' ' + v.name + ' seul·e';
+  } else {
+    label = ids.map(id => V_MAP[id].icon + ' ' + V_MAP[id].name).join(' + ');
+  }
+
+  let badge = '';
+  if (isLowest && totalPrice !== null) badge = '<span class="badge-eco">💶 Moins cher</span>';
+  else if (index === 0 && totalPrice !== null) badge = '<span class="badge-recommended">⭐ Recommandé</span>';
+  else if (hasVan && count > 1) badge = '<span class="badge-space">🚐 Grand espace</span>';
+
+  return { label, badge };
+}
+
+// ── Build WhatsApp message ───────────────────────────────────
+function buildWAMessage(params, combo, totalPrice) {
+  const vehicles = combo.map(id => V_MAP[id].name).join(' + ');
+  const price = totalPrice ? totalPrice + ' €' : 'Sur devis';
+  return encodeURIComponent(
+`Bonjour CABICAB 👋
+
+Je souhaite réserver un transfert :
+📍 Départ : ${params.from}
+🏁 Arrivée : ${params.to}
+📅 Date : ${params.date}
+🕐 Heure : ${params.time}
+👤 Passagers : ${params.pax}
+🧳 Bagages : ${params.bags}
+
+Option choisie : ${vehicles}
+Prix estimé : ${price}
+
+Merci de confirmer la disponibilité.`
+  );
+}
+
+// ── Render ───────────────────────────────────────────────────
+function formatDate(d) {
+  if (!d) return '—';
+  const [y,m,j] = d.split('-');
+  const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  return j + ' ' + months[parseInt(m)-1] + ' ' + y;
+}
+
+function init() {
+  const params = Object.fromEntries(new URLSearchParams(window.location.search));
+  const from  = params.from  || '';
+  const to    = params.to    || '';
+  const date  = params.date  || '';
+  const time  = params.time  || '';
+  const pax   = parseInt(params.pax)  || 1;
+  const bags  = parseInt(params.bags) || 0;
+
+  // Trip bar
+  document.getElementById('tripBar').innerHTML = `
+    <div class="trip-chip">
+      <span>📍</span>
+      <div class="trip-chip-col">
+        <span class="chip-label">Départ</span>
+        <strong>${from || '—'}</strong>
+      </div>
+    </div>
+    <span class="trip-arrow">→</span>
+    <div class="trip-chip">
+      <span>🏁</span>
+      <div class="trip-chip-col">
+        <span class="chip-label">Arrivée</span>
+        <strong>${to || '—'}</strong>
+      </div>
+    </div>
+    <div class="trip-chip">
+      <span>📅</span>
+      <div class="trip-chip-col">
+        <span class="chip-label">Date</span>
+        <strong>${formatDate(date)}${time ? ' à ' + time : ''}</strong>
+      </div>
+    </div>
+    <a href="index.html#reservation" class="edit-link">✏️ Modifier</a>
+  `;
+
+  // Needs
+  document.getElementById('needsRow').innerHTML = `
+    <div class="need-badge">👤 ${pax} passager${pax > 1 ? 's' : ''}</div>
+    <div class="need-badge">🧳 ${bags} grande${bags > 1 ? 's valises' : ' valise'}</div>
+  `;
+
+  // Zones : priorité aux zones détectées par GPS depuis index.html,
+  // fallback sur détection par texte si non transmises
+  const zA = params.zA || guessZoneFromText(from);
+  const zB = params.zB || guessZoneFromText(to);
+  const routeKey = findRouteKey(zA, zB);
+  if (!routeKey) {
+    document.getElementById('devisNotice').style.display = 'flex';
+  }
+
+  // Generate combos
+  const combos = generateCombinations(pax, bags);
+  if (combos.length === 0) {
+    document.getElementById('optionsGrid').innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">🔍</div>
+        <h3>Aucune option trouvée</h3>
+        <p>Contactez-nous directement pour une solution sur mesure.</p>
+      </div>`;
+    return;
+  }
+
+  // Calculate prices & sort
+  const combosWithPrice = combos.map(combo => {
+    const total = combo.reduce((sum, id) => {
+      const p = vehiclePrice(id, routeKey);
+      return p !== null ? sum + p : null;
+    }, 0);
+    const totalCap = combo.reduce((s, id) => ({ pax: s.pax + V_MAP[id].pax, bags: s.bags + V_MAP[id].bags }), { pax: 0, bags: 0 });
+    return { combo, total, totalCap };
+  });
+
+  // Sort: single vehicles first (by price), then multi-vehicle (by price)
+  combosWithPrice.sort((a, b) => {
+    const aLen = a.combo.length, bLen = b.combo.length;
+    if (aLen !== bLen) return aLen - bLen;
+    if (a.total !== null && b.total !== null) return a.total - b.total;
+    return 0;
+  });
+
+  // Limit to most relevant options (max 5)
+  const shown = combosWithPrice.slice(0, 5);
+  const allPrices = shown.map(x => x.total);
+
+  // Build cards HTML
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+
+  shown.forEach(({ combo, total, totalCap }, idx) => {
+    const meta = cardMeta(combo, idx, total, allPrices);
+
+    // Price display
+    let priceHtml = '';
+    if (total !== null) {
+      const breakdown = combo.map(id => {
+        const p = vehiclePrice(id, routeKey);
+        return V_MAP[id].name + (p ? ' ' + p + ' €' : '');
+      }).join(' + ');
+      priceHtml = `
+        <div class="price-total">${total} <span class="price-unit">€</span></div>
+        ${combo.length > 1 ? `<div class="price-breakdown">${breakdown}</div>` : ''}
+      `;
+    } else {
+      priceHtml = `<div class="price-devis">${typeof t === 'function' ? t('res.devis') : 'Sur devis'}</div>`;
+    }
+
+    // Vehicles pills
+    const pillsHtml = combo.map((id, i) => {
+      const v = V_MAP[id];
+      return (i > 0 ? '<span class="vehicle-plus">+</span>' : '') + `
+        <div class="vehicle-pill">
+          <span class="vp-icon">${v.icon}</span>
+          <div>
+            <div class="vp-name">${v.name}</div>
+            <div class="vp-cap">max ${v.pax} pax · ${v.bags} valises</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // WhatsApp link
+    const waMsg = buildWAMessage({ from, to, date, time, pax, bags }, combo, total);
+
+    const card = document.createElement('div');
+    card.className = 'option-card' + (idx === 0 && total !== null ? ' recommended' : '');
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-label">${meta.label} ${meta.badge}</div>
+      </div>
+      <div class="card-body">
+        <div class="vehicles-list">${pillsHtml}</div>
+        <div class="card-right">
+          <div class="cap-badges">
+            <span class="cap-badge">👤 ${totalCap.pax} places</span>
+            <span class="cap-badge">🧳 ${totalCap.bags} valises</span>
+          </div>
+          <div class="price-block">${priceHtml}</div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a href="tel:+33600000000" class="btn-phone">📞 Appeler</a>
+        ${total !== null ? `<button class="btn-pay"
+            data-combo='${JSON.stringify(combo).replace(/'/g, "&#39;")}'
+            data-total="${total}"
+            data-params='${JSON.stringify({ from, to, date, time, pax: String(pax), bags: String(bags) }).replace(/'/g, "&#39;")}'
+            onclick="handlePayBtn(this)">💳 Payer par carte</button>` : ''}
+        <a href="https://wa.me/33600000000?text=${waMsg}" target="_blank" class="btn-whatsapp">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          ${typeof t === 'function' ? t('res.whatsapp').replace('📲 ','') : 'Réserver par WhatsApp'}
+        </a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Update page title
+  const zoneLabel = { CDG: 'CDG', ORLY: 'Orly', BEAUVAIS: 'Beauvais', DISNEY: 'Disneyland', ASTERIX: 'Parc Astérix' };
+  const _t = typeof t === 'function' ? t : k => k;
+  document.getElementById('pageTitle').textContent = _t('res.title');
+  document.getElementById('pageSubtitle').textContent =
+    `${pax} ${_t('res.pax')} · ${bags} ${_t('res.bags')} · ${from} → ${to}`;
+}
+
+// ── Stripe Checkout ─────────────────────────────────────────
+function handlePayBtn(btn) {
+  const combo  = JSON.parse(btn.dataset.combo);
+  const total  = parseFloat(btn.dataset.total);
+  const params = JSON.parse(btn.dataset.params);
+  handlePay(btn, combo, total, params);
+}
+
+async function handlePay(btn, combo, total, params) {
+  btn.disabled = true;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '⏳ Redirection…';
+
+  try {
+    const description = 'Course CABICAB — ' + combo.map(id => (V_MAP[id] || {}).name || id).join(' + ');
+
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: total,
+        currency: 'eur',
+        description,
+        metadata: {
+          ...params,
+          vehicle: combo.join('+'),
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur serveur');
+    }
+
+    const { url } = await res.json();
+    window.location.href = url;
+
+  } catch (err) {
+    console.error('Paiement:', err.message);
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    alert('❌ Impossible de lancer le paiement.\n\nVeuillez réessayer ou contacter CABICAB par WhatsApp.');
+  }
+}
+
+init();
+</script>
+</body>
+</html>

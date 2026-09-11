@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="15 13 150 120" role="img" aria-label="CABICAB icône">
+  <title>CABICAB — Icône</title>
+  <desc>Emblème CABICAB, service de chauffeur privé à Paris</desc>
+  <defs>
+    <clipPath id="emblemClip">
+      <circle cx="90" cy="87" r="73"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="90" cy="87" r="75" fill="#1a2b4a"/>
+  <circle cx="90" cy="87" r="75" fill="none" stroke="#c8a85a" stroke-width="2.5"/>
+  <circle cx="90" cy="87" r="68" fill="none" stroke="#c8a85a" stroke-width="0.7" opacity="0.4"/>
+
+  <g clip-path="url(#emblemClip)">
+    <path d="M 38,103 L 38,97 L 43,93 L 51,87 L 59,78 L 70,67 L 82,60 L 111,59 L 124,64 L 133,74 L 140,85 L 143,96 L 143,103 L 139,103 A 11,11 0 0,0 117,103 L 75,103 A 11,11 0 0,0 53,103 Z" fill="#c8a85a"/>
+    <path d="M 59,94 L 65,79 L 70,67 L 82,60 L 82,94 Z" fill="#1a2b4a" opacity="0.72"/>
+    <path d="M 84,60 L 84,94 L 98,94 L 98,59 Z" fill="#1a2b4a" opacity="0.72"/>
+    <path d="M 100,59 L 100,94 L 112,94 L 112,59 Z" fill="#1a2b4a" opacity="0.72"/>
+    <path d="M 114,60 L 114,93 L 122,87 L 123,73 L 119,61 Z" fill="#1a2b4a" opacity="0.72"/>
+    <circle cx="64" cy="103" r="12" fill="#c8a85a"/>
+    <circle cx="64" cy="103" r="6.5" fill="#1a2b4a"/>
+    <circle cx="64" cy="103" r="3" fill="#c8a85a"/>
+    <circle cx="128" cy="103" r="12" fill="#c8a85a"/>
+    <circle cx="128" cy="103" r="6.5" fill="#1a2b4a"/>
+    <circle cx="128" cy="103" r="3" fill="#c8a85a"/>
+    <line x1="26" y1="116" x2="162" y2="116" stroke="#c8a85a" stroke-width="1" opacity="0.3"/>
+  </g>
+</svg>

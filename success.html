@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Réservation confirmée — CABICAB</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:  #1a2b4a; --navy2: #233660; --slate: #4a5e7a;
+      --gold:  #c8a85a; --gold2: #e0c278;
+      --light: #f5f7fa; --white: #ffffff; --gray: #7a8a9a;
+      --border: #d9e2ec; --green: #22a06b; --green-bg: #f0faf6;
+      --shadow: 0 4px 24px rgba(26,43,74,0.10); --radius: 12px;
+      --font-body: 'Inter', sans-serif;
+      --font-display: 'Playfair Display', serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); color: var(--navy); background: var(--light); min-height: 100vh; display: flex; flex-direction: column; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Nav ── */
+    nav {
+      background: rgba(26,43,74,0.97); position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px; max-width: 900px; margin: 0 auto; padding: 0 20px;
+    }
+    .nav-logo { font-family: var(--font-display); font-size: 1.4rem; color: #fff; }
+    .nav-logo span { color: var(--gold); }
+
+    /* ── Main ── */
+    main {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 48px 20px;
+    }
+    .success-card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      max-width: 560px; width: 100%;
+      overflow: hidden;
+    }
+
+    /* Header vert */
+    .success-header {
+      background: var(--green);
+      padding: 36px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .success-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.15), transparent 70%);
+    }
+    .checkmark {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 2.2rem;
+      position: relative; z-index: 1;
+    }
+    .success-header h1 {
+      font-family: var(--font-display);
+      font-size: 1.7rem; font-weight: 700;
+      color: #fff; margin-bottom: 6px;
+      position: relative; z-index: 1;
+    }
+    .success-header p {
+      color: rgba(255,255,255,0.85); font-size: 0.9rem;
+      position: relative; z-index: 1;
+    }
+
+    /* Body */
+    .success-body { padding: 28px 32px; }
+
+    .booking-summary {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+    .booking-summary h3 {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--slate); margin-bottom: 14px;
+    }
+    .summary-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 10px; font-size: 0.88rem;
+    }
+    .summary-row:last-child { margin-bottom: 0; }
+    .summary-icon { width: 20px; text-align: center; flex-shrink: 0; }
+    .summary-label { color: var(--slate); font-size: 0.78rem; }
+    .summary-value { font-weight: 600; color: var(--navy); }
+    .summary-col { display: flex; flex-direction: column; }
+    .price-highlight {
+      margin-top: 14px; padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .price-highlight span { color: var(--slate); font-size: 0.88rem; }
+    .price-highlight strong {
+      font-family: var(--font-display);
+      font-size: 1.5rem; color: var(--navy);
+    }
+
+    /* Notice */
+    .notice-box {
+      background: #fffbf0; border: 1px solid #ead98a;
+      border-radius: 10px; padding: 14px 18px;
+      display: flex; gap: 10px; align-items: flex-start;
+      margin-bottom: 24px; font-size: 0.85rem; color: #7a6020;
+      line-height: 1.55;
+    }
+    .notice-box .ni { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* Actions */
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--navy); color: var(--gold);
+      font-weight: 700; font-size: 0.92rem;
+      padding: 13px 20px; border-radius: var(--radius);
+      transition: background .2s;
+    }
+    .btn-primary:hover { background: var(--navy2); }
+    .btn-secondary {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: #25D366; color: white;
+      font-weight: 700; font-size: 0.92rem;
+      padding: 13px 20px; border-radius: var(--radius);
+      transition: background .2s;
+    }
+    .btn-secondary:hover { background: #1ebe5a; }
+    .btn-outline {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent; color: var(--navy);
+      font-weight: 600; font-size: 0.88rem;
+      padding: 12px 20px; border-radius: var(--radius);
+      border: 2px solid var(--border); transition: border-color .2s;
+      text-align: center;
+    }
+    .btn-outline:hover { border-color: var(--navy); }
+
+    /* Footer card */
+    .success-footer {
+      background: var(--light); border-top: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 0.78rem; color: var(--slate);
+    }
+    .success-footer .dot { color: var(--border); }
+
+    @media (max-width: 480px) {
+      .success-body { padding: 20px 18px; }
+      .success-header { padding: 28px 18px; }
+      .success-footer { padding: 14px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">CABI<span>CAB</span></a>
+  </div>
+</nav>
+
+<main>
+  <div class="success-card">
+
+    <div class="success-header">
+      <div class="checkmark">✅</div>
+      <h1>Paiement confirmé !</h1>
+      <p>Votre réservation CABICAB est enregistrée.</p>
+    </div>
+
+    <div class="success-body">
+
+      <div class="booking-summary" id="bookingSummary">
+        <h3>Récapitulatif de votre course</h3>
+        <!-- Rempli par JS -->
+        <div class="summary-row">
+          <span class="summary-icon">⏳</span>
+          <span style="color: var(--slate); font-size: 0.88rem;">Chargement…</span>
+        </div>
+      </div>
+
+      <div class="notice-box">
+        <span class="ni">📧</span>
+        <div>
+          <strong>Un reçu a été envoyé</strong> à votre adresse e-mail par Stripe.<br/>
+          Notre équipe vous contactera pour confirmer votre créneau. En cas d'urgence, appelez-nous directement.
+        </div>
+      </div>
+
+      <div class="actions" id="actions">
+        <a href="tel:+33600000000" class="btn-primary">📞 Appeler le chauffeur</a>
+        <a href="https://wa.me/33600000000" target="_blank" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Contacter via WhatsApp
+        </a>
+        <a href="index.html" class="btn-outline">← Retour à l'accueil</a>
+      </div>
+
+    </div>
+
+    <div class="success-footer">
+      <span>✅ Prix fixe garanti</span>
+      <span class="dot">·</span>
+      <span>🔒 Paiement sécurisé Stripe</span>
+      <span class="dot">·</span>
+      <span>🧾 Reçu par e-mail</span>
+    </div>
+
+  </div>
+</main>
+
+<script>
+(function () {
+  const p = new URLSearchParams(window.location.search);
+  const from    = p.get('from')    || '';
+  const to      = p.get('to')      || '';
+  const date    = p.get('date')    || '';
+  const time    = p.get('time')    || '';
+  const vehicle = p.get('vehicle') || '';
+  const amount  = p.get('amount')  || '';
+
+  function fmt(d) {
+    if (!d) return '';
+    const [y, m, j] = d.split('-');
+    const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    return j + ' ' + months[parseInt(m) - 1] + ' ' + y;
+  }
+
+  const vehicleLabels = { berline: '🚗 Berline', suv: '🚙 SUV', van: '🚐 VAN' };
+  const vehicleDisplay = vehicle
+    ? vehicle.split('+').map(v => vehicleLabels[v] || v).join(' + ')
+    : '';
+
+  const rows = [
+    from    ? { icon: '📍', label: 'Départ',   value: from } : null,
+    to      ? { icon: '🏁', label: 'Arrivée',  value: to   } : null,
+    date    ? { icon: '📅', label: 'Date',      value: fmt(date) + (time ? ' à ' + time : '') } : null,
+    vehicleDisplay ? { icon: '🚘', label: 'Véhicule', value: vehicleDisplay } : null,
+  ].filter(Boolean);
+
+  const summary = document.getElementById('bookingSummary');
+
+  if (rows.length > 0) {
+    let html = '<h3>Récapitulatif de votre course</h3>';
+    rows.forEach(r => {
+      html += `
+        <div class="summary-row">
+          <span class="summary-icon">${r.icon}</span>
+          <div class="summary-col">
+            <span class="summary-label">${r.label}</span>
+            <span class="summary-value">${r.value}</span>
+          </div>
+        </div>`;
+    });
+    if (amount) {
+      html += `
+        <div class="price-highlight">
+          <span>Total payé</span>
+          <strong>${amount} €</strong>
+        </div>`;
+    }
+    summary.innerHTML = html;
+  } else {
+    summary.innerHTML = '<h3>Récapitulatif de votre course</h3><p style="color:var(--slate);font-size:0.88rem">Votre paiement a bien été reçu.</p>';
+  }
+
+  // Lien WhatsApp avec récap
+  if (from || to) {
+    const msg = encodeURIComponent(
+      `Bonjour CABICAB 👋\n\nJe viens de régler ma réservation en ligne.\n📍 Départ : ${from}\n🏁 Arrivée : ${to}\n📅 Date : ${fmt(date)}${time ? ' à ' + time : ''}\n🚘 Véhicule : ${vehicleDisplay}\n\nMerci de confirmer.`
+    );
+    document.querySelector('.btn-secondary').href = `https://wa.me/33600000000?text=${msg}`;
+  }
+})();
+</script>
+</body>
+</html>
