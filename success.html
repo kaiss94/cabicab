@@ -115,6 +115,21 @@
       font-size: 1.5rem; color: var(--navy);
     }
 
+    /* Booking ref */
+    .booking-ref-box {
+      background: var(--navy); border-radius: 10px;
+      padding: 14px 18px; margin-bottom: 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .booking-ref-label { color: rgba(255,255,255,0.60); font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; }
+    .booking-ref-value { font-family: var(--font-display); font-size: 1.3rem; color: var(--gold); font-weight: 700; letter-spacing: 0.04em; }
+    .copy-btn {
+      background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.75); border-radius: 7px; padding: 6px 12px;
+      font-size: 0.78rem; cursor: pointer; font-family: inherit; transition: background .15s; white-space: nowrap;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.18); }
+
     /* Notice */
     .notice-box {
       background: #fffbf0; border: 1px solid #ead98a;
@@ -230,12 +245,15 @@
 <script>
 (function () {
   const p = new URLSearchParams(window.location.search);
-  const from    = p.get('from')    || '';
-  const to      = p.get('to')      || '';
-  const date    = p.get('date')    || '';
-  const time    = p.get('time')    || '';
-  const vehicle = p.get('vehicle') || '';
-  const amount  = p.get('amount')  || '';
+  const from       = p.get('from')        || '';
+  const to         = p.get('to')          || '';
+  const date       = p.get('date')        || '';
+  const time       = p.get('time')        || '';
+  const vehicle    = p.get('vehicle')     || '';
+  const amount     = p.get('amount')      || '';
+  const pax        = p.get('pax')         || '';
+  const bags       = p.get('bags')        || '';
+  const bookingRef = p.get('booking_ref') || '';
 
   function fmt(d) {
     if (!d) return '';
@@ -250,13 +268,28 @@
     : '';
 
   const rows = [
-    from    ? { icon: '📍', label: 'Départ',   value: from } : null,
-    to      ? { icon: '🏁', label: 'Arrivée',  value: to   } : null,
-    date    ? { icon: '📅', label: 'Date',      value: fmt(date) + (time ? ' à ' + time : '') } : null,
+    from    ? { icon: '📍', label: 'Départ',      value: from } : null,
+    to      ? { icon: '🏁', label: 'Arrivée',     value: to   } : null,
+    date    ? { icon: '📅', label: 'Date',         value: fmt(date) + (time ? ' à ' + time : '') } : null,
     vehicleDisplay ? { icon: '🚘', label: 'Véhicule', value: vehicleDisplay } : null,
+    (pax || bags)  ? { icon: '👥', label: 'Passagers / Bagages', value: (pax ? pax + ' passager' + (parseInt(pax) > 1 ? 's' : '') : '') + (pax && bags ? ' · ' : '') + (bags ? bags + ' bagage' + (parseInt(bags) > 1 ? 's' : '') : '') } : null,
   ].filter(Boolean);
 
   const summary = document.getElementById('bookingSummary');
+
+  // Référence de réservation
+  if (bookingRef) {
+    const refBox = document.createElement('div');
+    refBox.className = 'booking-ref-box';
+    refBox.innerHTML = `
+      <div>
+        <div class="booking-ref-label">Référence de réservation</div>
+        <div class="booking-ref-value" id="refValue">${bookingRef}</div>
+      </div>
+      <button class="copy-btn" onclick="copyRef()">📋 Copier</button>
+    `;
+    summary.parentNode.insertBefore(refBox, summary);
+  }
 
   if (rows.length > 0) {
     let html = '<h3>Récapitulatif de votre course</h3>';
@@ -282,14 +315,28 @@
     summary.innerHTML = '<h3>Récapitulatif de votre course</h3><p style="color:var(--slate);font-size:0.88rem">Votre paiement a bien été reçu.</p>';
   }
 
-  // Lien WhatsApp avec récap
+  // Lien WhatsApp avec récap + référence
   if (from || to) {
+    const refPart = bookingRef ? `\n🔖 Référence : ${bookingRef}` : '';
+    const paxPart = pax  ? `\n👤 Passagers : ${pax}` : '';
+    const bagPart = bags ? `\n🧳 Bagages : ${bags}` : '';
     const msg = encodeURIComponent(
-      `Bonjour CABICAB 👋\n\nJe viens de régler ma réservation en ligne.\n📍 Départ : ${from}\n🏁 Arrivée : ${to}\n📅 Date : ${fmt(date)}${time ? ' à ' + time : ''}\n🚘 Véhicule : ${vehicleDisplay}\n\nMerci de confirmer.`
+      `Bonjour CABICAB 👋\n\nJe viens de régler ma réservation en ligne.${refPart}\n📍 Départ : ${from}\n🏁 Arrivée : ${to}\n📅 Date : ${fmt(date)}${time ? ' à ' + time : ''}${paxPart}${bagPart}\n🚘 Véhicule : ${vehicleDisplay}\n\nMerci de confirmer.`
     );
     document.querySelector('.btn-secondary').href = `https://wa.me/33600000000?text=${msg}`;
   }
 })();
+
+function copyRef() {
+  const ref = document.getElementById('refValue')?.textContent;
+  if (!ref) return;
+  navigator.clipboard.writeText(ref).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    if (btn) { btn.textContent = '✅ Copié !'; setTimeout(() => btn.innerHTML = '📋 Copier', 2000); }
+  }).catch(() => {
+    prompt('Copiez votre référence :', ref);
+  });
+}
 </script>
 </body>
 </html>

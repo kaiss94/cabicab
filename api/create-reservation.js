@@ -8,6 +8,9 @@
 const { createClient } = require('@supabase/supabase-js');
 
 function getSupabase() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    throw new Error('Variables SUPABASE_URL et SUPABASE_SERVICE_KEY manquantes dans Vercel.');
+  }
   return createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY,

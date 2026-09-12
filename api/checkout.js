@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
       // Stripe envoie automatiquement un reçu si l'email est fourni
       // (à activer dans Stripe → Settings → Emails)
 
-      success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}&from=${encodeURIComponent(metadata.from || '')}&to=${encodeURIComponent(metadata.to || '')}&date=${encodeURIComponent(metadata.date || '')}&time=${encodeURIComponent(metadata.time || '')}&vehicle=${encodeURIComponent(metadata.vehicle || '')}&amount=${amount}`,
+      success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}&from=${encodeURIComponent(metadata.from || '')}&to=${encodeURIComponent(metadata.to || '')}&date=${encodeURIComponent(metadata.date || '')}&time=${encodeURIComponent(metadata.time || '')}&vehicle=${encodeURIComponent(metadata.vehicle || '')}&amount=${amount}&pax=${encodeURIComponent(metadata.pax || '')}&bags=${encodeURIComponent(metadata.bags || '')}&booking_ref=${encodeURIComponent(metadata.booking_ref || '')}`,
       cancel_url:  `${origin}/reservation.html?${cancelParams.toString()}`,
 
       // Métadonnées visibles dans le dashboard Stripe
