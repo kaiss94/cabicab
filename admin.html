@@ -930,7 +930,7 @@
 <div class="modal-overlay" id="driverModal">
   <div class="modal-box">
     <div class="modal-head">
-      <h3>Ajouter un chauffeur</h3>
+      <h3 id="driverModalTitle">Ajouter un chauffeur</h3>
       <button class="modal-x" onclick="closeAddDriver()">✕</button>
     </div>
     <div class="modal-body">
@@ -997,6 +997,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let allReservations = [];
 let allDrivers      = [];
 let currentResId    = null;
+let currentDriverId = null;
 
 // ══════════════════════════════════════
 //  AUTH
@@ -1377,10 +1378,14 @@ function renderDrivers(rows) {
       <td>${d.vehicle || '—'}</td>
       <td style="font-family:monospace;font-size:12px">${d.plate || '—'}</td>
       <td class="${d.active ? 'driver-active' : 'driver-inactive'}">${d.active ? '✓ Actif' : '✗ Inactif'}</td>
-      <td>
-        <button class="btn-toggle" onclick="toggleDriver('${d.id}', ${d.active})">
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-toggle" onclick="editDriver('${d.id}')">✏️ Modifier</button>
+        <button class="btn-toggle" onclick="toggleDriver('${d.id}', ${d.active})"
+                style="${d.active ? '' : 'border-color:#d1fae5;color:#065f46'}">
           ${d.active ? 'Désactiver' : 'Activer'}
         </button>
+        <button class="btn-toggle" onclick="deleteDriver('${d.id}', '${(d.first_name||'') + ' ' + (d.last_name||'').trim()}')"
+                style="border-color:#fecaca;color:#dc2626">🗑 Supprimer</button>
       </td>
     </tr>
   `).join('');
@@ -1396,6 +1401,8 @@ async function toggleDriver(id, isActive) {
 }
 
 function openAddDriver() {
+  currentDriverId = null;
+  document.getElementById('driverModalTitle').textContent = 'Ajouter un chauffeur';
   ['dFirstName','dLastName','dPhone','dVehicle','dPlate','dEmail'].forEach(id => {
     document.getElementById(id).value = '';
   });
@@ -1403,6 +1410,31 @@ function openAddDriver() {
   document.getElementById('driverErr').style.display = 'none';
   document.getElementById('driverModal').classList.add('open');
   document.getElementById('dFirstName').focus();
+}
+
+function editDriver(id) {
+  const d = allDrivers.find(x => x.id === id);
+  if (!d) return;
+  currentDriverId = id;
+  document.getElementById('driverModalTitle').textContent = 'Modifier le chauffeur';
+  document.getElementById('dFirstName').value    = d.first_name    || '';
+  document.getElementById('dLastName').value     = d.last_name     || '';
+  document.getElementById('dPhone').value        = d.phone         || '';
+  document.getElementById('dVehicleType').value  = d.vehicle_type  || '';
+  document.getElementById('dVehicle').value      = d.vehicle       || '';
+  document.getElementById('dPlate').value        = d.plate         || '';
+  document.getElementById('dEmail').value        = d.email         || '';
+  document.getElementById('driverErr').style.display = 'none';
+  document.getElementById('driverModal').classList.add('open');
+  document.getElementById('dFirstName').focus();
+}
+
+async function deleteDriver(id, name) {
+  if (!confirm(`Supprimer le chauffeur "${name.trim()}" ? Cette action est irréversible.`)) return;
+  const { error } = await sb.from('drivers').delete().eq('id', id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  allDrivers = allDrivers.filter(d => d.id !== id);
+  renderDrivers(allDrivers);
 }
 
 function closeAddDriver() {
@@ -1426,10 +1458,8 @@ async function saveDriver() {
     return;
   }
 
-  const fullName = firstName + ' ' + lastName;
-
-  const { data, error } = await sb.from('drivers').insert({
-    name:         fullName,
+  const payload = {
+    name:         firstName + ' ' + lastName,
     first_name:   firstName,
     last_name:    lastName,
     phone:        document.getElementById('dPhone').value.trim()       || null,
@@ -1437,8 +1467,22 @@ async function saveDriver() {
     vehicle:      document.getElementById('dVehicle').value.trim()     || null,
     plate:        document.getElementById('dPlate').value.trim().toUpperCase() || null,
     email:        document.getElementById('dEmail').value.trim().toLowerCase() || null,
-    active:       true,
-  }).select().single();
+  };
+
+  let data, error;
+
+  if (currentDriverId) {
+    // Mise à jour
+    ({ data, error } = await sb.from('drivers').update(payload).eq('id', currentDriverId).select().single());
+    if (!error) {
+      const idx = allDrivers.findIndex(d => d.id === currentDriverId);
+      if (idx !== -1) allDrivers[idx] = { ...allDrivers[idx], ...data };
+    }
+  } else {
+    // Création
+    ({ data, error } = await sb.from('drivers').insert({ ...payload, active: true }).select().single());
+    if (!error) allDrivers.push(data);
+  }
 
   if (error) {
     errEl.textContent = error.message;
@@ -1446,7 +1490,6 @@ async function saveDriver() {
     return;
   }
 
-  allDrivers.push(data);
   allDrivers.sort((a, b) => driverFullName(a).localeCompare(driverFullName(b)));
   renderDrivers(allDrivers);
   closeAddDriver();
