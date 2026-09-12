@@ -73,8 +73,8 @@ module.exports = async (req, res) => {
       .single();
 
     if (error) {
-      console.error('Supabase insert error:', error.message);
-      return res.status(500).json({ error: 'Erreur lors de la création de la réservation.' });
+      console.error('Supabase insert error:', error.message, error.details, error.hint);
+      return res.status(500).json({ error: 'DB: ' + error.message });
     }
 
     return res.status(200).json({
@@ -84,6 +84,6 @@ module.exports = async (req, res) => {
 
   } catch (err) {
     console.error('create-reservation error:', err.message);
-    return res.status(500).json({ error: 'Erreur serveur.' });
+    return res.status(500).json({ error: 'Exception: ' + err.message });
   }
 };
