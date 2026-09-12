@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { amount, currency = 'eur', description, metadata = {} } = req.body;
+    const { amount, currency = 'eur', description, metadata = {}, reservation_id = '' } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ error: 'Montant invalide' });
@@ -75,6 +75,7 @@ module.exports = async (req, res) => {
 
       // Métadonnées visibles dans le dashboard Stripe
       metadata: {
+        reservation_id: reservation_id || '',
         from:    metadata.from    || '',
         to:      metadata.to      || '',
         date:    metadata.date    || '',

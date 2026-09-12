@@ -237,6 +237,76 @@
       .trip-bar-inner { gap: 8px; }
       .edit-link { margin-left: 0; }
     }
+
+    /* ── Pre-payment modal ─────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(26,43,74,0.60); backdrop-filter: blur(3px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white); border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(26,43,74,0.30);
+      max-width: 520px; width: 100%; max-height: 92vh; overflow-y: auto;
+    }
+    .modal-header {
+      background: var(--navy); padding: 20px 28px;
+      border-radius: 16px 16px 0 0;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .modal-header h2 {
+      font-family: var(--font-display); font-size: 1.15rem;
+      color: var(--white); margin: 0;
+    }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.6); font-size: 1.5rem; line-height: 1;
+      padding: 2px 8px; transition: color .15s; font-family: inherit;
+    }
+    .modal-close:hover { color: var(--white); }
+    .modal-body { padding: 24px 28px 0; }
+    .modal-body .mform-group { margin-bottom: 16px; }
+    .modal-body label {
+      display: block; font-size: 0.81rem; font-weight: 600;
+      color: var(--slate); margin-bottom: 5px; letter-spacing: 0.02em;
+    }
+    .modal-body label .req { color: #c0392b; margin-left: 2px; }
+    .modal-body input,
+    .modal-body textarea {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem; color: var(--navy);
+      background: var(--light); transition: border-color .15s; outline: none;
+    }
+    .modal-body input:focus,
+    .modal-body textarea:focus { border-color: var(--navy); background: var(--white); }
+    .modal-body textarea { resize: vertical; min-height: 68px; }
+    .mform-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .modal-error {
+      color: #c0392b; font-size: 0.83rem;
+      min-height: 20px; margin-bottom: 8px;
+    }
+    .modal-footer { padding: 12px 28px 24px; }
+    .btn-modal-submit {
+      width: 100%; padding: 14px; border: none; border-radius: var(--radius);
+      background: var(--navy); color: var(--gold);
+      font-family: inherit; font-size: 0.98rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-modal-submit:hover { background: var(--navy2); }
+    .btn-modal-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+    .modal-notice {
+      font-size: 0.76rem; color: var(--gray);
+      text-align: center; margin-top: 10px;
+    }
+    @media (max-width: 480px) {
+      .mform-row { grid-template-columns: 1fr; }
+      .modal-body { padding: 18px 18px 0; }
+      .modal-footer { padding: 10px 18px 20px; }
+      .modal-header { padding: 16px 18px; }
+    }
   </style>
 </head>
 <body>
@@ -290,6 +360,51 @@
     </div>
   </div>
 </main>
+
+<!-- ── Pre-payment modal ──────────────────────────────────── -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <h2 id="modalTitle">💳 Vos coordonnées</h2>
+      <button class="modal-close" onclick="closePayModal()" aria-label="Fermer">×</button>
+    </div>
+    <form class="modal-body" id="payForm" onsubmit="submitPayForm(event)" novalidate>
+      <div class="mform-row">
+        <div class="mform-group">
+          <label>Prénom <span class="req">*</span></label>
+          <input type="text" name="first_name" required placeholder="Jean" autocomplete="given-name" />
+        </div>
+        <div class="mform-group">
+          <label>Nom <span class="req">*</span></label>
+          <input type="text" name="last_name" required placeholder="Dupont" autocomplete="family-name" />
+        </div>
+      </div>
+      <div class="mform-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" name="client_email" required placeholder="jean.dupont@email.com" autocomplete="email" />
+      </div>
+      <div class="mform-group">
+        <label>Téléphone <span class="req">*</span></label>
+        <input type="tel" name="client_phone" required placeholder="+33 6 00 00 00 00" autocomplete="tel" />
+      </div>
+      <div class="mform-group">
+        <label>N° de vol ou de train <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
+        <input type="text" name="flight_number" placeholder="Ex : AF1234, TGV 6203…" />
+      </div>
+      <div class="mform-group" style="margin-bottom:20px">
+        <label>Remarques / demandes spéciales <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
+        <textarea name="special_requests" placeholder="Siège bébé, animaux de compagnie, besoin particulier…"></textarea>
+      </div>
+      <div class="modal-error" id="payFormError"></div>
+    </form>
+    <div class="modal-footer">
+      <button type="submit" form="payForm" class="btn-modal-submit" id="payFormSubmit">
+        🔒 Continuer vers le paiement
+      </button>
+      <div class="modal-notice">🔒 Paiement sécurisé · Stripe · Données chiffrées</div>
+    </div>
+  </div>
+</div>
 
 <script src="shared.js"></script>
 <script src="i18n.js"></script>
@@ -547,49 +662,126 @@ function init() {
     `${pax} ${_t('res.pax')} · ${bags} ${_t('res.bags')} · ${from} → ${to}`;
 }
 
-// ── Stripe Checkout ─────────────────────────────────────────
+// ── Pre-payment modal ────────────────────────────────────────
+let _pendingPay = null; // { btn, combo, total, params }
+
 function handlePayBtn(btn) {
-  const combo  = JSON.parse(btn.dataset.combo);
-  const total  = parseFloat(btn.dataset.total);
-  const params = JSON.parse(btn.dataset.params);
-  handlePay(btn, combo, total, params);
+  _pendingPay = {
+    btn,
+    combo:  JSON.parse(btn.dataset.combo),
+    total:  parseFloat(btn.dataset.total),
+    params: JSON.parse(btn.dataset.params),
+  };
+  openPayModal();
 }
 
-async function handlePay(btn, combo, total, params) {
-  btn.disabled = true;
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '⏳ Redirection…';
+function openPayModal() {
+  const modal = document.getElementById('payModal');
+  modal.classList.add('open');
+  document.getElementById('payForm').reset();
+  document.getElementById('payFormError').textContent = '';
+  // Focus premier champ
+  setTimeout(() => modal.querySelector('input')?.focus(), 80);
+  // Fermeture overlay
+  modal.onclick = e => { if (e.target === modal) closePayModal(); };
+  // Échap
+  document.addEventListener('keydown', _escListener);
+}
+
+function closePayModal() {
+  document.getElementById('payModal').classList.remove('open');
+  document.removeEventListener('keydown', _escListener);
+  _pendingPay = null;
+}
+
+function _escListener(e) { if (e.key === 'Escape') closePayModal(); }
+
+async function submitPayForm(e) {
+  e.preventDefault();
+  if (!_pendingPay) return;
+
+  const form      = document.getElementById('payForm');
+  const submitBtn = document.getElementById('payFormSubmit');
+  const errEl     = document.getElementById('payFormError');
+  const origText  = submitBtn.innerHTML;
+
+  // Validation côté client
+  const firstName   = form.first_name.value.trim();
+  const lastName    = form.last_name.value.trim();
+  const clientEmail = form.client_email.value.trim();
+  const clientPhone = form.client_phone.value.trim();
+
+  if (!firstName || !lastName) { errEl.textContent = '❌ Veuillez renseigner votre prénom et nom.'; return; }
+  if (!clientEmail || !clientEmail.includes('@')) { errEl.textContent = '❌ Email invalide.'; return; }
+  if (!clientPhone) { errEl.textContent = '❌ Veuillez renseigner votre téléphone.'; return; }
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '⏳ Traitement…';
+  errEl.textContent = '';
+
+  const { btn, combo, total, params } = _pendingPay;
 
   try {
-    const description = 'Course CABICAB — ' + combo.map(id => (V_MAP[id] || {}).name || id).join(' + ');
-
-    const res = await fetch('/api/checkout', {
+    // 1 — Sauvegarder la réservation en base
+    const resCreate = await fetch('/api/create-reservation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        amount: total,
-        currency: 'eur',
+        from:             params.from,
+        to:               params.to,
+        date:             params.date,
+        time:             params.time,
+        pax:              params.pax,
+        bags:             params.bags,
+        vehicle:          combo.join('+'),
+        amount:           total,
+        client_name:      `${firstName} ${lastName}`,
+        client_email:     clientEmail,
+        client_phone:     clientPhone,
+        flight_number:    form.flight_number.value.trim(),
+        special_requests: form.special_requests.value.trim(),
+      }),
+    });
+
+    if (!resCreate.ok) {
+      const err = await resCreate.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur lors de la création de la réservation.');
+    }
+
+    const { reservation_id, booking_ref } = await resCreate.json();
+
+    // 2 — Créer la session Stripe Checkout
+    const description = 'Course CABICAB — ' + combo.map(id => (V_MAP[id] || {}).name || id).join(' + ');
+
+    const resCheckout = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount:         total,
+        currency:       'eur',
         description,
+        reservation_id,
         metadata: {
           ...params,
-          vehicle: combo.join('+'),
+          vehicle:     combo.join('+'),
+          booking_ref,
         },
       }),
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Erreur serveur');
+    if (!resCheckout.ok) {
+      const err = await resCheckout.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur lors du lancement du paiement.');
     }
 
-    const { url } = await res.json();
+    const { url } = await resCheckout.json();
     window.location.href = url;
 
   } catch (err) {
     console.error('Paiement:', err.message);
-    btn.disabled = false;
-    btn.innerHTML = originalText;
-    alert('❌ Impossible de lancer le paiement.\n\nVeuillez réessayer ou contacter CABICAB par WhatsApp.');
+    errEl.textContent = '❌ ' + err.message;
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = origText;
   }
 }
 
