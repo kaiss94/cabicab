@@ -836,17 +836,18 @@
           <table>
             <thead>
               <tr>
+                <th>Prénom</th>
                 <th>Nom</th>
                 <th>Téléphone</th>
+                <th>Type de véhicule</th>
                 <th>Véhicule</th>
                 <th>Plaque</th>
-                <th>E-mail</th>
                 <th>Statut</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody id="driverTable">
-              <tr class="empty-row"><td colspan="7">Chargement…</td></tr>
+              <tr class="empty-row"><td colspan="8">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
@@ -936,17 +937,32 @@
       <div class="modal-err" id="driverErr"></div>
       <div class="mform-row">
         <div class="mform-group">
-          <label>Prénom & Nom *</label>
-          <input type="text" id="dName" placeholder="Jean Dupont" />
+          <label>Prénom *</label>
+          <input type="text" id="dFirstName" placeholder="Jean" />
         </div>
         <div class="mform-group">
-          <label>Téléphone</label>
-          <input type="tel" id="dPhone" placeholder="+33 6 00 00 00 00" />
+          <label>Nom *</label>
+          <input type="text" id="dLastName" placeholder="Dupont" />
         </div>
       </div>
       <div class="mform-row">
         <div class="mform-group">
-          <label>Véhicule</label>
+          <label>Téléphone</label>
+          <input type="tel" id="dPhone" placeholder="+33 6 00 00 00 00" />
+        </div>
+        <div class="mform-group">
+          <label>Type de véhicule</label>
+          <select id="dVehicleType" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:14px;font-family:inherit;outline:none;transition:border-color 0.2s">
+            <option value="">— Sélectionner —</option>
+            <option value="Berline">Berline</option>
+            <option value="SUV">SUV</option>
+            <option value="Vann">Vann</option>
+          </select>
+        </div>
+      </div>
+      <div class="mform-row">
+        <div class="mform-group">
+          <label>Véhicule (modèle)</label>
           <input type="text" id="dVehicle" placeholder="Mercedes Classe E" />
         </div>
         <div class="mform-group">
@@ -1244,7 +1260,7 @@ function openPanel(id) {
     allDrivers
       .filter(d => d.active || d.id === r.assigned_driver_id)
       .map(d => `<option value="${d.id}" ${r.assigned_driver_id === d.id ? 'selected' : ''}>
-        ${d.name}${d.vehicle ? ' · ' + d.vehicle : ''}
+        ${driverFullName(d)}${d.vehicle_type ? ' · ' + d.vehicle_type : ''}${d.vehicle ? ' · ' + d.vehicle : ''}
       </option>`)
       .join('');
 
@@ -1340,19 +1356,26 @@ async function loadDrivers() {
   }
 }
 
+function driverFullName(d) {
+  const fn = d.first_name || '';
+  const ln = d.last_name  || '';
+  return (fn + ' ' + ln).trim() || d.name || '—';
+}
+
 function renderDrivers(rows) {
   const tbody = document.getElementById('driverTable');
   if (!rows.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">Aucun chauffeur enregistré</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Aucun chauffeur enregistré</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(d => `
     <tr>
-      <td style="font-weight:500">${d.name}</td>
+      <td style="font-weight:500">${d.first_name || '—'}</td>
+      <td style="font-weight:500">${d.last_name  || '—'}</td>
       <td>${d.phone || '—'}</td>
+      <td>${d.vehicle_type || '—'}</td>
       <td>${d.vehicle || '—'}</td>
       <td style="font-family:monospace;font-size:12px">${d.plate || '—'}</td>
-      <td style="font-size:12px">${d.email || '—'}</td>
       <td class="${d.active ? 'driver-active' : 'driver-inactive'}">${d.active ? '✓ Actif' : '✗ Inactif'}</td>
       <td>
         <button class="btn-toggle" onclick="toggleDriver('${d.id}', ${d.active})">
@@ -1373,12 +1396,13 @@ async function toggleDriver(id, isActive) {
 }
 
 function openAddDriver() {
-  ['dName','dPhone','dVehicle','dPlate','dEmail'].forEach(id => {
+  ['dFirstName','dLastName','dPhone','dVehicle','dPlate','dEmail'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  document.getElementById('dVehicleType').value = '';
   document.getElementById('driverErr').style.display = 'none';
   document.getElementById('driverModal').classList.add('open');
-  document.getElementById('dName').focus();
+  document.getElementById('dFirstName').focus();
 }
 
 function closeAddDriver() {
@@ -1391,23 +1415,29 @@ document.getElementById('driverModal').addEventListener('click', e => {
 });
 
 async function saveDriver() {
-  const name   = document.getElementById('dName').value.trim();
-  const errEl  = document.getElementById('driverErr');
+  const firstName = document.getElementById('dFirstName').value.trim();
+  const lastName  = document.getElementById('dLastName').value.trim();
+  const errEl     = document.getElementById('driverErr');
   errEl.style.display = 'none';
 
-  if (!name) {
-    errEl.textContent = 'Le nom du chauffeur est requis.';
+  if (!firstName || !lastName) {
+    errEl.textContent = 'Le prénom et le nom sont requis.';
     errEl.style.display = 'block';
     return;
   }
 
+  const fullName = firstName + ' ' + lastName;
+
   const { data, error } = await sb.from('drivers').insert({
-    name,
-    phone:   document.getElementById('dPhone').value.trim()   || null,
-    vehicle: document.getElementById('dVehicle').value.trim() || null,
-    plate:   document.getElementById('dPlate').value.trim().toUpperCase() || null,
-    email:   document.getElementById('dEmail').value.trim().toLowerCase() || null,
-    active:  true,
+    name:         fullName,
+    first_name:   firstName,
+    last_name:    lastName,
+    phone:        document.getElementById('dPhone').value.trim()       || null,
+    vehicle_type: document.getElementById('dVehicleType').value        || null,
+    vehicle:      document.getElementById('dVehicle').value.trim()     || null,
+    plate:        document.getElementById('dPlate').value.trim().toUpperCase() || null,
+    email:        document.getElementById('dEmail').value.trim().toLowerCase() || null,
+    active:       true,
   }).select().single();
 
   if (error) {
@@ -1417,7 +1447,7 @@ async function saveDriver() {
   }
 
   allDrivers.push(data);
-  allDrivers.sort((a, b) => a.name.localeCompare(b.name));
+  allDrivers.sort((a, b) => driverFullName(a).localeCompare(driverFullName(b)));
   renderDrivers(allDrivers);
   closeAddDriver();
 }
