@@ -884,6 +884,7 @@
                 <th>Type de véhicule</th>
                 <th>Véhicule</th>
                 <th>Plaque</th>
+                <th>E-mail</th>
                 <th>Statut</th>
                 <th>Action</th>
               </tr>
@@ -1418,7 +1419,7 @@ function driverFullName(d) {
 function renderDrivers(rows) {
   const tbody = document.getElementById('driverTable');
   if (!rows.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Aucun chauffeur enregistré</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Aucun chauffeur enregistré</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(d => `
@@ -1429,6 +1430,7 @@ function renderDrivers(rows) {
       <td>${d.vehicle_type || '—'}</td>
       <td>${d.vehicle || '—'}</td>
       <td style="font-family:monospace;font-size:12px">${d.plate || '—'}</td>
+      <td style="font-size:12px">${d.email || '—'}</td>
       <td class="${d.active ? 'driver-active' : 'driver-inactive'}">${d.active ? '✓ Actif' : '✗ Inactif'}</td>
       <td style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn-toggle" onclick="editDriver('${d.id}')">✏️ Modifier</button>
