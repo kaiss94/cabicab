@@ -38,7 +38,7 @@ const TRANSLATIONS = {
     'nav.reserver':   'Réserver',
     // Hero
     'hero.eyebrow':     'VTC Paris & Île-de-France',
-    'hero.title':       'Le juste prix,<br><em>sans mauvaise</em><br>surprise.',
+    'hero.title':       'Voyagez au juste prix,<br><em>sans mauvaise surprise.</em>',
     'hero.desc':        'CABICAB, votre chauffeur privé à Paris. Transferts aéroport, trajets longue distance, mise à disposition — ponctualité et discrétion garanties.',
     'hero.cta.book':    '📅 Réserver maintenant',
     'hero.cta.call':    '📞 Appeler',
