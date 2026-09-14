@@ -520,7 +520,49 @@
     .panel-footer {
       padding: 16px 24px;
       border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
+
+    .btn-send-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-wa {
+      flex: 1;
+      padding: 10px;
+      background: #25d366;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-wa:hover { background: #1ebe5d; }
+    .btn-wa:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-mail {
+      flex: 1;
+      padding: 10px;
+      background: #f59e0b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-mail:hover { background: #d97706; }
+    .btn-mail:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .btn-save {
       width: 100%;
@@ -923,6 +965,13 @@
   </div>
   <div class="panel-footer">
     <button class="btn-save" id="panelSaveBtn" onclick="saveReservation()">Enregistrer les modifications</button>
+    <div class="btn-send-row">
+      <button class="btn-wa"   id="btnSendWa"   onclick="sendBonWhatsApp()" disabled>📱 WhatsApp chauffeur</button>
+      <button class="btn-mail" id="btnSendMail" onclick="sendBonEmail()"    disabled>📧 Email chauffeur</button>
+    </div>
+    <div id="driverAlert" style="font-size:12px;color:var(--text-muted);text-align:center;display:none">
+      Assignez un chauffeur avec téléphone / e-mail pour envoyer le bon.
+    </div>
   </div>
 </div>
 
@@ -1270,6 +1319,9 @@ function openPanel(id) {
   msg.style.display = 'none';
   msg.className = 'panel-msg';
 
+  // Update send buttons state
+  updateSendButtons(r);
+
   // Open panel
   document.getElementById('panelOverlay').classList.add('open');
   document.getElementById('sidePanel').classList.add('open');
@@ -1493,6 +1545,87 @@ async function saveDriver() {
   allDrivers.sort((a, b) => driverFullName(a).localeCompare(driverFullName(b)));
   renderDrivers(allDrivers);
   closeAddDriver();
+}
+
+// ══════════════════════════════════════
+//  BON DE COMMANDE — ENVOI CHAUFFEUR
+// ══════════════════════════════════════
+function updateSendButtons(r) {
+  const driver   = allDrivers.find(d => d.id === r.assigned_driver_id);
+  const hasPhone = driver?.phone;
+  const hasEmail = driver?.email;
+  const hasDriver = !!driver;
+
+  document.getElementById('btnSendWa').disabled   = !hasPhone;
+  document.getElementById('btnSendMail').disabled  = !hasEmail;
+
+  const alert = document.getElementById('driverAlert');
+  if (!hasDriver) {
+    alert.textContent = 'Assignez un chauffeur pour envoyer le bon.';
+    alert.style.display = 'block';
+  } else if (!hasPhone && !hasEmail) {
+    alert.textContent = 'Le chauffeur n\'a ni téléphone ni e-mail enregistré.';
+    alert.style.display = 'block';
+  } else {
+    alert.style.display = 'none';
+  }
+}
+
+function buildBonText(r, driver) {
+  const sep = '─────────────────────';
+  return [
+    '🚖 *BON DE COMMANDE — CABICAB*',
+    sep,
+    `📋 Réf : ${r.booking_ref || '—'}`,
+    '',
+    '👤 *CLIENT*',
+    `Nom : ${r.client_name}`,
+    `Tél : ${r.client_phone || '—'}`,
+    `Email : ${r.client_email || '—'}`,
+    r.flight_number ? `✈️ Vol : ${r.flight_number}` : '',
+    r.special_requests ? `📝 Demandes : ${r.special_requests}` : '',
+    '',
+    sep,
+    '🗺️ *TRAJET*',
+    `Départ : ${r.from_location || '—'}`,
+    `Arrivée : ${r.to_location || '—'}`,
+    `Date : ${fmtDate(r.trip_date)}`,
+    `Heure : ${r.trip_time || '—'}`,
+    '',
+    sep,
+    '🚗 *VÉHICULE*',
+    `Type : ${driver.vehicle_type || '—'}`,
+    `Modèle : ${driver.vehicle || '—'}`,
+    `Pax : ${r.pax || 1}  ·  Bagages : ${r.bags || 0}`,
+    '',
+    sep,
+    `💶 Montant encaissé : ${r.amount != null ? r.amount + ' €' : '—'}`,
+    sep,
+    'Merci de confirmer la prise en charge.',
+    '— CABICAB',
+  ].filter(l => l !== null).join('\n');
+}
+
+function sendBonWhatsApp() {
+  const r = allReservations.find(x => x.id === currentResId);
+  if (!r) return;
+  const driver = allDrivers.find(d => d.id === r.assigned_driver_id);
+  if (!driver?.phone) return;
+
+  const phone = driver.phone.replace(/\D/g, '');
+  const text  = buildBonText(r, driver);
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function sendBonEmail() {
+  const r = allReservations.find(x => x.id === currentResId);
+  if (!r) return;
+  const driver = allDrivers.find(d => d.id === r.assigned_driver_id);
+  if (!driver?.email) return;
+
+  const subject = `Bon de commande CABICAB — ${r.booking_ref || r.id}`;
+  const body    = buildBonText(r, driver).replace(/\*/g, '');
+  window.location.href = `mailto:${driver.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 // ══════════════════════════════════════
