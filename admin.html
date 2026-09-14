@@ -1574,8 +1574,6 @@ function buildBonText(r, driver) {
     `Pax : ${r.pax || 1}  ·  Bagages : ${r.bags || 0}`,
     '',
     sep,
-    `💶 Montant encaissé : ${r.amount != null ? r.amount + ' €' : '—'}`,
-    sep,
     'Merci de confirmer la prise en charge.',
     '— CABICAB',
   ].filter(l => l !== null).join('\n');
