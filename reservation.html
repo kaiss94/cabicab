@@ -391,9 +391,22 @@
         <label>N° de vol ou de train <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
         <input type="text" name="flight_number" placeholder="Ex : AF1234, TGV 6203…" />
       </div>
+      <div class="mform-group">
+        <label>Équipements enfants <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:10px;font-weight:400;cursor:pointer">
+            <input type="checkbox" name="siege_bebe" value="1" style="width:18px;height:18px;accent-color:var(--navy);cursor:pointer;flex-shrink:0" />
+            <span>Siège bébé <span style="color:var(--gray);font-size:0.88rem">(+5 €)</span></span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;font-weight:400;cursor:pointer">
+            <input type="checkbox" name="rehausseur" value="1" style="width:18px;height:18px;accent-color:var(--navy);cursor:pointer;flex-shrink:0" />
+            <span>Réhausseur <span style="color:var(--gray);font-size:0.88rem">(+5 €)</span></span>
+          </label>
+        </div>
+      </div>
       <div class="mform-group" style="margin-bottom:20px">
         <label>Remarques / demandes spéciales <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
-        <textarea name="special_requests" placeholder="Siège bébé, animaux de compagnie, besoin particulier…"></textarea>
+        <textarea name="special_requests" placeholder="Animaux de compagnie, besoin particulier…"></textarea>
       </div>
       <div class="modal-error" id="payFormError"></div>
     </form>
@@ -739,6 +752,8 @@ async function submitPayForm(e) {
         client_email:     clientEmail,
         client_phone:     clientPhone,
         flight_number:    form.flight_number.value.trim(),
+        siege_bebe:       form.siege_bebe.checked,
+        rehausseur:       form.rehausseur.checked,
         special_requests: form.special_requests.value.trim(),
       }),
     });

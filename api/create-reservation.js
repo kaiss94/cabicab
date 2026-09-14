@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
       from, to, date, time, vehicle, pax, bags, amount,
       // Client
       client_name, client_email, client_phone,
-      flight_number, special_requests,
+      flight_number, siege_bebe, rehausseur, special_requests,
     } = req.body;
 
     // Validation minimale
@@ -69,6 +69,8 @@ module.exports = async (req, res) => {
         client_email:     client_email.trim().toLowerCase(),
         client_phone:     client_phone.trim(),
         flight_number:    flight_number?.trim()      || null,
+        siege_bebe:       siege_bebe === true || siege_bebe === 'true' || false,
+        rehausseur:       rehausseur === true || rehausseur === 'true' || false,
         special_requests: special_requests?.trim()   || null,
         status:           'pending',
       })

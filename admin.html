@@ -918,6 +918,8 @@
         <div class="info-item"><div class="il">Téléphone</div><div class="iv" id="pi-phone">—</div></div>
         <div class="info-item full"><div class="il">E-mail</div><div class="iv" id="pi-email">—</div></div>
         <div class="info-item"><div class="il">Numéro de vol</div><div class="iv" id="pi-flight">—</div></div>
+        <div class="info-item"><div class="il">Siège bébé</div><div class="iv" id="pi-siege-bebe">—</div></div>
+        <div class="info-item"><div class="il">Réhausseur</div><div class="iv" id="pi-rehausseur">—</div></div>
         <div class="info-item full"><div class="il">Demandes spéciales</div><div class="iv" id="pi-requests">—</div></div>
       </div>
     </div>
@@ -1363,8 +1365,10 @@ function openPanel(id) {
   document.getElementById('pi-name').textContent    = r.client_name || '—';
   document.getElementById('pi-phone').textContent   = r.client_phone || '—';
   document.getElementById('pi-email').textContent   = r.client_email || '—';
-  document.getElementById('pi-flight').textContent  = r.flight_number || '—';
-  document.getElementById('pi-requests').textContent = r.special_requests || '—';
+  document.getElementById('pi-flight').textContent      = r.flight_number || '—';
+  document.getElementById('pi-siege-bebe').textContent  = r.siege_bebe  ? '✅ Oui' : '—';
+  document.getElementById('pi-rehausseur').textContent  = r.rehausseur  ? '✅ Oui' : '—';
+  document.getElementById('pi-requests').textContent    = r.special_requests || '—';
   document.getElementById('pi-from').textContent    = r.from_location || '—';
   document.getElementById('pi-to').textContent      = r.to_location || '—';
   document.getElementById('pi-date').textContent    = fmtDate(r.trip_date);
@@ -1657,6 +1661,8 @@ function buildBonText(r, driver) {
     `Tél : ${r.client_phone || '—'}`,
     `Email : ${r.client_email || '—'}`,
     r.flight_number ? `✈️ Vol : ${r.flight_number}` : '',
+    r.siege_bebe  ? '🪑 Siège bébé : Oui' : '',
+    r.rehausseur  ? '🪑 Réhausseur : Oui' : '',
     r.special_requests ? `📝 Demandes : ${r.special_requests}` : '',
     '',
     sep,
@@ -1670,7 +1676,7 @@ function buildBonText(r, driver) {
     '🚗 *VÉHICULE*',
     `Type : ${driver.vehicle_type || '—'}`,
     `Modèle : ${driver.vehicle || '—'}`,
-    `Pax : ${r.pax || 1}  ·  Bagages : ${r.bags || 0}`,
+    `Pax : ${r.pax || 1}  ·  Bagages : ${r.bags || 0}${r.siege_bebe ? '  ·  Siège bébé' : ''}${r.rehausseur ? '  ·  Réhausseur' : ''}`,
     '',
     sep,
     (() => {
