@@ -1386,8 +1386,24 @@ const TRANSLATIONS = {
 const SUPPORTED_LANGS = ['fr', 'en', 'es', 'it', 'ko', 'zh'];
 const DEFAULT_LANG = 'fr';
 
+// Détecte la langue du navigateur et la mappe sur une langue supportée
+function detectBrowserLang() {
+  const langs = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+  for (const raw of langs) {
+    const code = raw.toLowerCase().split('-')[0]; // ex: "en-US" → "en"
+    // Cas spéciaux : variantes chinoises → zh
+    if (raw.toLowerCase().startsWith('zh')) return 'zh';
+    if (SUPPORTED_LANGS.includes(code)) return code;
+  }
+  return DEFAULT_LANG;
+}
+
 function getLang() {
-  return localStorage.getItem('cabicab_lang') || DEFAULT_LANG;
+  // 1. Préférence explicite de l'utilisateur (clic sur le sélecteur)
+  const saved = localStorage.getItem('cabicab_lang');
+  if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+  // 2. Langue du navigateur (première visite)
+  return detectBrowserLang();
 }
 
 function setLang(lang) {
