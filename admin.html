@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --navy: #1a2b4a;
@@ -1037,6 +1038,7 @@
         <h3 id="recapDriverName" style="font-size:17px">—</h3>
         <div id="recapDriverInfo" style="font-size:12px;color:var(--text-muted);margin-top:2px"></div>
       </div>
+      <button onclick="exportRecapExcel()" style="margin-right:10px;padding:7px 14px;background:#1d6f42;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">⬇ Excel</button>
       <button class="modal-x" onclick="closeRecap()">✕</button>
     </div>
     <div class="modal-body" style="padding:20px 24px">
@@ -1684,6 +1686,58 @@ function sendBonEmail() {
   const subject = `Bon de commande CABICAB — ${r.booking_ref || r.id}`;
   const body    = buildBonText(r, driver).replace(/\*/g, '');
   openLink(`mailto:${driver.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+}
+
+// ══════════════════════════════════════
+//  EXPORT EXCEL RÉCAP CHAUFFEUR
+// ══════════════════════════════════════
+function exportRecapExcel() {
+  // Récupère le chauffeur actif (dernier ouvert dans le modal)
+  const titleEl = document.getElementById('recapDriverName');
+  const infoEl  = document.getElementById('recapDriverInfo');
+
+  // Reconstruit les données depuis les lignes du tableau récap
+  const rows = Array.from(document.querySelectorAll('#recapTable tr:not(.empty-row)')).map(tr => {
+    const cells = tr.querySelectorAll('td');
+    if (cells.length < 6) return null;
+    return {
+      'Référence':     cells[0].textContent.trim(),
+      'Date':          cells[1].textContent.trim().split('\n')[0],
+      'Heure':         cells[1].textContent.trim().split('\n')[1]?.trim() || '',
+      'Trajet':        cells[2].textContent.trim().replace('→', '→'),
+      'Pax / Bagages': cells[3].textContent.trim(),
+      'Statut':        cells[4].textContent.trim(),
+      'Montant (€)':   cells[5].textContent.trim().replace(' €', '').trim() || '',
+    };
+  }).filter(Boolean);
+
+  // Feuille principale avec en-tête info chauffeur
+  const wb = XLSX.utils.book_new();
+
+  // Info chauffeur en haut
+  const header = [
+    ['Chauffeur', titleEl.textContent.trim()],
+    ['Véhicule',  infoEl.textContent.trim()],
+    ['Export',    new Date().toLocaleDateString('fr-FR')],
+    [],
+    ['Référence', 'Date', 'Heure', 'Trajet', 'Pax / Bagages', 'Statut', 'Montant (€)'],
+  ];
+
+  const dataRows = rows.map(r => Object.values(r));
+  const allRows  = [...header, ...dataRows];
+
+  const ws = XLSX.utils.aoa_to_sheet(allRows);
+
+  // Largeurs de colonnes
+  ws['!cols'] = [
+    { wch: 20 }, { wch: 12 }, { wch: 8 }, { wch: 40 },
+    { wch: 14 }, { wch: 14 }, { wch: 12 },
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Courses');
+
+  const safeName = titleEl.textContent.trim().replace(/\s+/g, '_') || 'chauffeur';
+  XLSX.writeFile(wb, `CABICAB_recap_${safeName}.xlsx`);
 }
 
 // ══════════════════════════════════════
