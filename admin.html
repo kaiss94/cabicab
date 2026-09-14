@@ -1074,6 +1074,7 @@
             <tr>
               <th>Réf.</th>
               <th>Date</th>
+              <th>Client</th>
               <th>Trajet</th>
               <th>Pax</th>
               <th>Statut</th>
@@ -1081,7 +1082,7 @@
             </tr>
           </thead>
           <tbody id="recapTable">
-            <tr class="empty-row"><td colspan="6">Aucune course</td></tr>
+            <tr class="empty-row"><td colspan="7">Aucune course</td></tr>
           </tbody>
         </table>
       </div>
@@ -1699,15 +1700,18 @@ function exportRecapExcel() {
   // Reconstruit les données depuis les lignes du tableau récap
   const rows = Array.from(document.querySelectorAll('#recapTable tr:not(.empty-row)')).map(tr => {
     const cells = tr.querySelectorAll('td');
-    if (cells.length < 6) return null;
+    if (cells.length < 7) return null;
+    const clientLines = cells[2].textContent.trim().split('\n').map(s => s.trim()).filter(Boolean);
     return {
       'Référence':     cells[0].textContent.trim(),
-      'Date':          cells[1].textContent.trim().split('\n')[0],
+      'Date':          cells[1].textContent.trim().split('\n')[0].trim(),
       'Heure':         cells[1].textContent.trim().split('\n')[1]?.trim() || '',
-      'Trajet':        cells[2].textContent.trim().replace('→', '→'),
-      'Pax / Bagages': cells[3].textContent.trim(),
-      'Statut':        cells[4].textContent.trim(),
-      'Montant (€)':   cells[5].textContent.trim().replace(' €', '').trim() || '',
+      'Client':        clientLines[0] || '',
+      'Téléphone':     clientLines[1] || '',
+      'Trajet':        cells[3].textContent.trim(),
+      'Pax / Bagages': cells[4].textContent.trim(),
+      'Statut':        cells[5].textContent.trim(),
+      'Montant (€)':   cells[6].textContent.trim().replace(' €', '').trim() || '',
     };
   }).filter(Boolean);
 
@@ -1720,7 +1724,7 @@ function exportRecapExcel() {
     ['Véhicule',  infoEl.textContent.trim()],
     ['Export',    new Date().toLocaleDateString('fr-FR')],
     [],
-    ['Référence', 'Date', 'Heure', 'Trajet', 'Pax / Bagages', 'Statut', 'Montant (€)'],
+    ['Référence', 'Date', 'Heure', 'Client', 'Téléphone', 'Trajet', 'Pax / Bagages', 'Statut', 'Montant (€)'],
   ];
 
   const dataRows = rows.map(r => Object.values(r));
@@ -1730,8 +1734,8 @@ function exportRecapExcel() {
 
   // Largeurs de colonnes
   ws['!cols'] = [
-    { wch: 20 }, { wch: 12 }, { wch: 8 }, { wch: 40 },
-    { wch: 14 }, { wch: 14 }, { wch: 12 },
+    { wch: 20 }, { wch: 12 }, { wch: 8 }, { wch: 22 },
+    { wch: 16 }, { wch: 38 }, { wch: 14 }, { wch: 14 }, { wch: 12 },
   ];
 
   XLSX.utils.book_append_sheet(wb, ws, 'Courses');
@@ -1781,6 +1785,10 @@ function openRecap(driverId) {
       <tr>
         <td><span class="booking-ref">${r.booking_ref || '—'}</span></td>
         <td>${fmtDate(r.trip_date)}<br><span style="color:var(--text-muted);font-size:11px">${r.trip_time || ''}</span></td>
+        <td>
+          <div class="client-name">${r.client_name || '—'}</div>
+          <div class="client-email">${r.client_phone || ''}</div>
+        </td>
         <td style="font-size:12.5px">${r.from_location || '—'}<span class="route-arrow">→</span>${r.to_location || '—'}</td>
         <td style="font-size:12.5px">${r.pax || 1} / ${r.bags || 0}</td>
         <td>${badge(r.status)}</td>
