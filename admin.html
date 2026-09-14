@@ -967,11 +967,8 @@
   <div class="panel-footer">
     <button class="btn-save" id="panelSaveBtn" onclick="saveReservation()">Enregistrer les modifications</button>
     <div class="btn-send-row">
-      <button class="btn-wa"   id="btnSendWa"   onclick="sendBonWhatsApp()" disabled>📱 WhatsApp chauffeur</button>
-      <button class="btn-mail" id="btnSendMail" onclick="sendBonEmail()"    disabled>📧 Email chauffeur</button>
-    </div>
-    <div id="driverAlert" style="font-size:12px;color:var(--text-muted);text-align:center;display:none">
-      Assignez un chauffeur avec téléphone / e-mail pour envoyer le bon.
+      <button class="btn-wa"   onclick="sendBonWhatsApp()">📱 WhatsApp chauffeur</button>
+      <button class="btn-mail" onclick="sendBonEmail()">📧 Email chauffeur</button>
     </div>
   </div>
 </div>
@@ -1320,9 +1317,6 @@ function openPanel(id) {
   msg.style.display = 'none';
   msg.className = 'panel-msg';
 
-  // Update send buttons state
-  updateSendButtons(r);
-
   // Open panel
   document.getElementById('panelOverlay').classList.add('open');
   document.getElementById('sidePanel').classList.add('open');
@@ -1552,27 +1546,6 @@ async function saveDriver() {
 // ══════════════════════════════════════
 //  BON DE COMMANDE — ENVOI CHAUFFEUR
 // ══════════════════════════════════════
-function updateSendButtons(r) {
-  const driver   = allDrivers.find(d => d.id === r.assigned_driver_id);
-  const hasPhone = driver?.phone;
-  const hasEmail = driver?.email;
-  const hasDriver = !!driver;
-
-  document.getElementById('btnSendWa').disabled   = !hasPhone;
-  document.getElementById('btnSendMail').disabled  = !hasEmail;
-
-  const alert = document.getElementById('driverAlert');
-  if (!hasDriver) {
-    alert.textContent = 'Assignez un chauffeur pour envoyer le bon.';
-    alert.style.display = 'block';
-  } else if (!hasPhone && !hasEmail) {
-    alert.textContent = 'Le chauffeur n\'a ni téléphone ni e-mail enregistré.';
-    alert.style.display = 'block';
-  } else {
-    alert.style.display = 'none';
-  }
-}
-
 function buildBonText(r, driver) {
   const sep = '─────────────────────';
   return [
@@ -1608,26 +1581,51 @@ function buildBonText(r, driver) {
   ].filter(l => l !== null).join('\n');
 }
 
+function getSelectedDriver() {
+  // Lit le chauffeur depuis le dropdown (fonctionne même sans avoir sauvegardé)
+  const driverId = document.getElementById('editDriver').value;
+  if (!driverId) return null;
+  return allDrivers.find(d => d.id === driverId) || null;
+}
+
+function getCurrentRes() {
+  return allReservations.find(x => x.id === currentResId) || null;
+}
+
+function openLink(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 function sendBonWhatsApp() {
-  const r = allReservations.find(x => x.id === currentResId);
-  if (!r) return;
-  const driver = allDrivers.find(d => d.id === r.assigned_driver_id);
-  if (!driver?.phone) return;
+  const r = getCurrentRes();
+  if (!r) { alert('Aucune réservation sélectionnée.'); return; }
+
+  const driver = getSelectedDriver();
+  if (!driver) { alert('Veuillez sélectionner un chauffeur dans le panneau.'); return; }
+  if (!driver.phone) { alert('Ce chauffeur n\'a pas de numéro de téléphone enregistré.'); return; }
 
   const phone = driver.phone.replace(/\D/g, '');
   const text  = buildBonText(r, driver);
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+  openLink(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`);
 }
 
 function sendBonEmail() {
-  const r = allReservations.find(x => x.id === currentResId);
-  if (!r) return;
-  const driver = allDrivers.find(d => d.id === r.assigned_driver_id);
-  if (!driver?.email) return;
+  const r = getCurrentRes();
+  if (!r) { alert('Aucune réservation sélectionnée.'); return; }
+
+  const driver = getSelectedDriver();
+  if (!driver) { alert('Veuillez sélectionner un chauffeur dans le panneau.'); return; }
+  if (!driver.email) { alert('Ce chauffeur n\'a pas d\'adresse e-mail enregistrée.'); return; }
 
   const subject = `Bon de commande CABICAB — ${r.booking_ref || r.id}`;
   const body    = buildBonText(r, driver).replace(/\*/g, '');
-  window.location.href = `mailto:${driver.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  openLink(`mailto:${driver.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
 }
 
 // ══════════════════════════════════════
