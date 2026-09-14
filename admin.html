@@ -959,6 +959,19 @@
         </select>
       </div>
       <div class="panel-form-group">
+        <label>Marge agence (%)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="number" id="editMargin" min="0" max="100" step="1" value="25"
+                 oninput="updateDriverPrice()"
+                 style="width:90px;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;background:var(--bg);transition:border-color 0.2s"
+                 onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--border)'" />
+          <span style="font-size:13px;color:var(--text-muted)">%</span>
+          <span style="margin-left:auto;font-size:13px">Prix chauffeur :
+            <strong id="driverPriceDisplay" style="color:var(--navy)">—</strong>
+          </span>
+        </div>
+      </div>
+      <div class="panel-form-group">
         <label>Notes internes</label>
         <textarea id="editNotes" placeholder="Notes visibles uniquement par l'équipe…"></textarea>
       </div>
@@ -1078,11 +1091,12 @@
               <th>Trajet</th>
               <th>Pax</th>
               <th>Statut</th>
-              <th>Montant</th>
+              <th>Montant client</th>
+              <th>Prix chauffeur</th>
             </tr>
           </thead>
           <tbody id="recapTable">
-            <tr class="empty-row"><td colspan="7">Aucune course</td></tr>
+            <tr class="empty-row"><td colspan="8">Aucune course</td></tr>
           </tbody>
         </table>
       </div>
@@ -1362,7 +1376,9 @@ function openPanel(id) {
 
   // Form values
   document.getElementById('editStatus').value = r.status || 'pending';
+  document.getElementById('editMargin').value = r.driver_margin != null ? r.driver_margin : 25;
   document.getElementById('editNotes').value  = r.notes || '';
+  updateDriverPrice();
 
   // Populate driver dropdown
   const dSel = document.getElementById('editDriver');
@@ -1400,9 +1416,12 @@ async function saveReservation() {
   btn.disabled = true;
   btn.textContent = 'Enregistrement…';
 
+  const margin = parseFloat(document.getElementById('editMargin').value) || 25;
+
   const updates = {
     status:             document.getElementById('editStatus').value,
     assigned_driver_id: document.getElementById('editDriver').value || null,
+    driver_margin:      margin,
     notes:              document.getElementById('editNotes').value.trim() || null,
   };
 
@@ -1609,6 +1628,23 @@ async function saveDriver() {
 // ══════════════════════════════════════
 //  BON DE COMMANDE — ENVOI CHAUFFEUR
 // ══════════════════════════════════════
+function calcDriverPrice(r) {
+  if (r.amount == null) return null;
+  const margin = r.driver_margin != null ? r.driver_margin : 25;
+  return Math.round(parseFloat(r.amount) * (1 - margin / 100) * 100) / 100;
+}
+
+function updateDriverPrice() {
+  const r = allReservations.find(x => x.id === currentResId);
+  const margin = parseFloat(document.getElementById('editMargin')?.value) || 25;
+  const amount = r?.amount;
+  const el = document.getElementById('driverPriceDisplay');
+  if (!el) return;
+  if (amount == null) { el.textContent = '—'; return; }
+  const price = Math.round(parseFloat(amount) * (1 - margin / 100) * 100) / 100;
+  el.textContent = price.toFixed(2) + ' €';
+}
+
 function buildBonText(r, driver) {
   const sep = '─────────────────────';
   return [
@@ -1636,6 +1672,11 @@ function buildBonText(r, driver) {
     `Modèle : ${driver.vehicle || '—'}`,
     `Pax : ${r.pax || 1}  ·  Bagages : ${r.bags || 0}`,
     '',
+    sep,
+    (() => {
+      const price = calcDriverPrice(r);
+      return price != null ? `💸 *Votre rémunération : ${price.toFixed(2)} €*` : null;
+    })(),
     sep,
     'Merci de confirmer la prise en charge.',
     '— CABICAB',
@@ -1700,18 +1741,19 @@ function exportRecapExcel() {
   // Reconstruit les données depuis les lignes du tableau récap
   const rows = Array.from(document.querySelectorAll('#recapTable tr:not(.empty-row)')).map(tr => {
     const cells = tr.querySelectorAll('td');
-    if (cells.length < 7) return null;
+    if (cells.length < 8) return null;
     const clientLines = cells[2].textContent.trim().split('\n').map(s => s.trim()).filter(Boolean);
     return {
-      'Référence':     cells[0].textContent.trim(),
-      'Date':          cells[1].textContent.trim().split('\n')[0].trim(),
-      'Heure':         cells[1].textContent.trim().split('\n')[1]?.trim() || '',
-      'Client':        clientLines[0] || '',
-      'Téléphone':     clientLines[1] || '',
-      'Trajet':        cells[3].textContent.trim(),
-      'Pax / Bagages': cells[4].textContent.trim(),
-      'Statut':        cells[5].textContent.trim(),
-      'Montant (€)':   cells[6].textContent.trim().replace(' €', '').trim() || '',
+      'Référence':          cells[0].textContent.trim(),
+      'Date':               cells[1].textContent.trim().split('\n')[0].trim(),
+      'Heure':              cells[1].textContent.trim().split('\n')[1]?.trim() || '',
+      'Client':             clientLines[0] || '',
+      'Téléphone':          clientLines[1] || '',
+      'Trajet':             cells[3].textContent.trim(),
+      'Pax / Bagages':      cells[4].textContent.trim(),
+      'Statut':             cells[5].textContent.trim(),
+      'Montant client (€)': cells[6].textContent.trim().replace(' €', '').trim() || '',
+      'Prix chauffeur (€)': cells[7].textContent.trim().replace(' €', '').trim() || '',
     };
   }).filter(Boolean);
 
@@ -1724,7 +1766,7 @@ function exportRecapExcel() {
     ['Véhicule',  infoEl.textContent.trim()],
     ['Export',    new Date().toLocaleDateString('fr-FR')],
     [],
-    ['Référence', 'Date', 'Heure', 'Client', 'Téléphone', 'Trajet', 'Pax / Bagages', 'Statut', 'Montant (€)'],
+    ['Référence', 'Date', 'Heure', 'Client', 'Téléphone', 'Trajet', 'Pax / Bagages', 'Statut', 'Montant client (€)', 'Prix chauffeur (€)'],
   ];
 
   const dataRows = rows.map(r => Object.values(r));
@@ -1735,7 +1777,7 @@ function exportRecapExcel() {
   // Largeurs de colonnes
   ws['!cols'] = [
     { wch: 20 }, { wch: 12 }, { wch: 8 }, { wch: 22 },
-    { wch: 16 }, { wch: 38 }, { wch: 14 }, { wch: 14 }, { wch: 12 },
+    { wch: 16 }, { wch: 38 }, { wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 18 },
   ];
 
   XLSX.utils.book_append_sheet(wb, ws, 'Courses');
@@ -1793,6 +1835,7 @@ function openRecap(driverId) {
         <td style="font-size:12.5px">${r.pax || 1} / ${r.bags || 0}</td>
         <td>${badge(r.status)}</td>
         <td class="amount-cell">${r.amount != null ? r.amount + ' €' : '—'}</td>
+        <td style="font-weight:600;color:#065f46">${(() => { const p = calcDriverPrice(r); return p != null ? p.toFixed(2) + ' €' : '—'; })()}</td>
       </tr>
     `).join('');
   }
