@@ -990,6 +990,169 @@
   </div>
 </section>
 
+<!-- ─── Tour Eiffel — Animation Paris ──────────────────── -->
+<style>
+  .eiffel-section {
+    background: linear-gradient(160deg, var(--navy) 0%, #0c1828 100%);
+    padding: 80px 0 70px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .eiffel-section .tag {
+    color: var(--gold);
+    border-color: rgba(200,168,90,.35);
+    background: rgba(200,168,90,.08);
+  }
+  .eiffel-section .section-title   { color: var(--gold); }
+  .eiffel-section .section-subtitle { color: rgba(255,255,255,.5); }
+  .eiffel-anim { max-width: 360px; margin: 40px auto 0; }
+  .eiffel-anim svg { width: 100%; height: auto; display: block; }
+
+  /* Mobile : désactive les filtres SVG (coûteux en GPU) */
+  @media (max-width: 768px) {
+    #eiffel-scene [filter] { filter: none; }
+    .eiffel-anim { max-width: 280px; }
+  }
+  /* Accessibilité : respecte la préférence "Réduire les animations" */
+  @media (prefers-reduced-motion: reduce) {
+    #eiffel-scene * { animation: none !important; }
+  }
+</style>
+
+<section class="eiffel-section">
+  <div class="container">
+    <div class="tag" data-i18n="eiffel.tag">Votre base à Paris</div>
+    <h2 class="section-title" data-i18n="eiffel.title">Au cœur de Paris</h2>
+    <p class="section-subtitle" data-i18n="eiffel.subtitle">Votre chauffeur privé, disponible 7j/7 dans toute la capitale et au-delà.</p>
+
+    <div class="eiffel-anim">
+      <svg id="eiffel-scene" viewBox="0 0 380 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Voiture qui tourne autour de la Tour Eiffel">
+        <defs>
+          <radialGradient id="ef-bg" cx="50%" cy="55%" r="55%">
+            <stop offset="0%" stop-color="#1e3155"/>
+            <stop offset="100%" stop-color="#0c1828"/>
+          </radialGradient>
+          <radialGradient id="ef-ground" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#c8a85a" stop-opacity=".12"/>
+            <stop offset="100%" stop-color="#c8a85a" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="ef-tower">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="ef-car">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="ef-tip">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Fond -->
+        <ellipse cx="190" cy="195" rx="180" ry="165" fill="url(#ef-bg)"/>
+
+        <!-- Étoiles -->
+        <circle cx="30"  cy="25"  r="1"   fill="white" opacity=".5"><animate attributeName="opacity" values=".5;.1;.5" dur="4s" repeatCount="indefinite"/></circle>
+        <circle cx="355" cy="18"  r=".9"  fill="white" opacity=".45"><animate attributeName="opacity" values=".45;.1;.45" dur="5s" repeatCount="indefinite" begin="1.5s"/></circle>
+        <circle cx="60"  cy="45"  r=".7"  fill="white" opacity=".35"/>
+        <circle cx="330" cy="40"  r="1"   fill="white" opacity=".4"><animate attributeName="opacity" values=".4;.1;.4" dur="3.5s" repeatCount="indefinite" begin="2s"/></circle>
+        <circle cx="18"  cy="75"  r=".6"  fill="white" opacity=".3"/>
+        <circle cx="360" cy="70"  r=".7"  fill="white" opacity=".35"/>
+        <circle cx="100" cy="20"  r=".8"  fill="white" opacity=".4"/>
+        <circle cx="280" cy="15"  r=".6"  fill="white" opacity=".3"/>
+
+        <!-- Halo au sol -->
+        <ellipse cx="190" cy="275" rx="110" ry="32" fill="url(#ef-ground)"/>
+
+        <!-- ══ TOUR EIFFEL ══ -->
+        <g filter="url(#ef-tower)">
+          <!-- Jambes principales -->
+          <path d="M 120,275 L 142,205 L 154,205 L 140,275 Z" fill="#c8a85a" opacity=".9"/>
+          <path d="M 148,275 L 158,205 L 168,205 L 164,275 Z" fill="#c8a85a" opacity=".75"/>
+          <path d="M 260,275 L 238,205 L 226,205 L 240,275 Z" fill="#c8a85a" opacity=".9"/>
+          <path d="M 232,275 L 222,205 L 212,205 L 216,275 Z" fill="#c8a85a" opacity=".75"/>
+          <!-- Arches basses -->
+          <path d="M 122,275 Q 155,250 178,235" fill="none" stroke="#c8a85a" stroke-width="2" stroke-opacity=".5"/>
+          <path d="M 258,275 Q 225,250 202,235" fill="none" stroke="#c8a85a" stroke-width="2" stroke-opacity=".5"/>
+          <!-- 1er étage -->
+          <rect x="140" y="200" width="100" height="9" rx="2" fill="#c8a85a"/>
+          <line x1="148" y1="235" x2="232" y2="235" stroke="#c8a85a" stroke-width="1.5" stroke-opacity=".4"/>
+          <!-- Section médiane -->
+          <path d="M 148,200 L 162,155 L 218,155 L 232,200 Z" fill="#c8a85a" opacity=".85"/>
+          <!-- 2e étage -->
+          <rect x="158" y="150" width="64" height="8" rx="2" fill="#c8a85a"/>
+          <!-- Section sup -->
+          <path d="M 164,150 L 178,108 L 202,108 L 216,150 Z" fill="#c8a85a" opacity=".8"/>
+          <!-- 3e étage -->
+          <rect x="176" y="103" width="28" height="7" rx="1.5" fill="#c8a85a"/>
+          <!-- Flèche -->
+          <path d="M 182,103 L 187,80 L 193,80 L 198,103 Z" fill="#c8a85a" opacity=".85"/>
+          <line x1="190" y1="80" x2="190" y2="62" stroke="#c8a85a" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Étoile sommet -->
+          <circle cx="190" cy="60" r="3.5" fill="#c8a85a" filter="url(#ef-tip)"/>
+          <circle cx="190" cy="60" r="6" fill="none" stroke="#c8a85a" stroke-width="1" opacity=".4">
+            <animate attributeName="r" values="5;10;5" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values=".5;0;.5" dur="3s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+
+        <!-- ══ ROUTE ELLIPTIQUE ══ -->
+        <!-- cx=190 cy=278 rx=108 ry=36 -->
+        <path d="M 298,278 C 298,257 252,242 190,242 C 128,242 82,257 82,278"
+              fill="none" stroke="#c8a85a" stroke-width="1" stroke-dasharray="4,5" stroke-opacity=".2"/>
+        <path d="M 82,278 C 82,299 128,314 190,314 C 252,314 298,299 298,278"
+              fill="none" stroke="#c8a85a" stroke-width="1" stroke-dasharray="4,5" stroke-opacity=".35"/>
+        <path id="ef-loop"
+              d="M 298,278 C 298,299 252,314 190,314 C 128,314 82,299 82,278 C 82,257 128,242 190,242 C 252,242 298,257 298,278 Z"
+              fill="none" stroke="none"/>
+
+        <!-- ══ VOITURE ══ -->
+        <g filter="url(#ef-car)">
+          <g id="ef-car-shape">
+            <rect x="-14" y="-5" width="28" height="10" rx="3" fill="#c8a85a"/>
+            <path d="M -7,-5 L -4,-12 L 7,-12 L 11,-5 Z" fill="#c8a85a" opacity=".95"/>
+            <path d="M -5,-5 L -3,-10 L 5,-10 L 8,-5 Z" fill="#1a2b4a" opacity=".85"/>
+            <circle cx="-8"  cy="5" r="4"   fill="#0d1829" stroke="#c8a85a" stroke-width="1.5"/>
+            <circle cx="8"   cy="5" r="4"   fill="#0d1829" stroke="#c8a85a" stroke-width="1.5"/>
+            <circle cx="-8"  cy="5" r="1.5" fill="#c8a85a" opacity=".6"/>
+            <circle cx="8"   cy="5" r="1.5" fill="#c8a85a" opacity=".6"/>
+            <circle cx="14" cy="0" r="2.5" fill="white" opacity=".95"/>
+            <circle cx="14" cy="0" r="4.5" fill="white" opacity=".18"/>
+          </g>
+          <animateMotion href="#ef-car-shape" dur="9s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#ef-loop"/>
+          </animateMotion>
+        </g>
+
+        <!-- Label bas -->
+        <text x="190" y="340" font-family="'Playfair Display',Georgia,serif" font-size="10" fill="#c8a85a" text-anchor="middle" letter-spacing="3" opacity=".4">CABICAB · PARIS</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var svg = document.getElementById('eiffel-scene');
+  if (!svg) return;
+  // Pause si l'utilisateur préfère réduire les animations (batterie / accessibilité)
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    svg.pauseAnimations();
+    return;
+  }
+  // Pause automatique quand la section n'est pas à l'écran
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        e.isIntersecting ? svg.unpauseAnimations() : svg.pauseAnimations();
+      });
+    }, { threshold: 0.1 }).observe(svg);
+  }
+})();
+</script>
+
 <!-- ─── Zones de couverture ─────────────────────────────── -->
 <section id="zones">
   <div class="container">
