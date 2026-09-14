@@ -1029,6 +1029,65 @@
   </div>
 </div>
 
+<!-- ════════════════════ MODAL RÉCAP CHAUFFEUR ════════════════════ -->
+<div class="modal-overlay" id="recapModal" style="align-items:flex-start;padding-top:40px;overflow-y:auto">
+  <div class="modal-box" style="width:680px;max-width:calc(100vw - 32px);margin-bottom:40px">
+    <div class="modal-head">
+      <div style="flex:1">
+        <h3 id="recapDriverName" style="font-size:17px">—</h3>
+        <div id="recapDriverInfo" style="font-size:12px;color:var(--text-muted);margin-top:2px"></div>
+      </div>
+      <button class="modal-x" onclick="closeRecap()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px">
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div class="stat-card" style="border-left-color:#6366f1;padding:14px 16px">
+          <div class="stat-label">Total</div>
+          <div class="stat-value" id="recapTotal" style="font-size:22px">—</div>
+          <div class="stat-sub">courses</div>
+        </div>
+        <div class="stat-card" style="border-left-color:#10b981;padding:14px 16px">
+          <div class="stat-label">Terminées</div>
+          <div class="stat-value" id="recapCompleted" style="font-size:22px">—</div>
+          <div class="stat-sub">courses</div>
+        </div>
+        <div class="stat-card" style="border-left-color:#f59e0b;padding:14px 16px">
+          <div class="stat-label">En cours / Confirmées</div>
+          <div class="stat-value" id="recapActive" style="font-size:22px">—</div>
+          <div class="stat-sub">courses</div>
+        </div>
+        <div class="stat-card" style="border-left-color:var(--gold);padding:14px 16px">
+          <div class="stat-label">CA total (client)</div>
+          <div class="stat-value" id="recapRevenue" style="font-size:22px">—</div>
+          <div class="stat-sub">encaissé</div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Réf.</th>
+              <th>Date</th>
+              <th>Trajet</th>
+              <th>Pax</th>
+              <th>Statut</th>
+              <th>Montant</th>
+            </tr>
+          </thead>
+          <tbody id="recapTable">
+            <tr class="empty-row"><td colspan="6">Aucune course</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════
 //  SUPABASE
@@ -1427,6 +1486,7 @@ function renderDrivers(rows) {
       <td style="font-size:12px">${d.email || '—'}</td>
       <td class="${d.active ? 'driver-active' : 'driver-inactive'}">${d.active ? '✓ Actif' : '✗ Inactif'}</td>
       <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-toggle" onclick="openRecap('${d.id}')" style="border-color:#c7d2fe;color:#4f46e5">📊 Récap</button>
         <button class="btn-toggle" onclick="editDriver('${d.id}')">✏️ Modifier</button>
         <button class="btn-toggle" onclick="toggleDriver('${d.id}', ${d.active})"
                 style="${d.active ? '' : 'border-color:#d1fae5;color:#065f46'}">
@@ -1625,6 +1685,66 @@ function sendBonEmail() {
   const body    = buildBonText(r, driver).replace(/\*/g, '');
   openLink(`mailto:${driver.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
 }
+
+// ══════════════════════════════════════
+//  RÉCAP CHAUFFEUR
+// ══════════════════════════════════════
+function openRecap(driverId) {
+  const driver = allDrivers.find(d => d.id === driverId);
+  if (!driver) return;
+
+  // Infos chauffeur
+  const fullName = driverFullName(driver);
+  document.getElementById('recapDriverName').textContent = fullName;
+  document.getElementById('recapDriverInfo').textContent = [
+    driver.vehicle_type, driver.vehicle, driver.plate ? '· ' + driver.plate : ''
+  ].filter(Boolean).join(' ');
+
+  // Courses de ce chauffeur
+  const rides = allReservations
+    .filter(r => r.assigned_driver_id === driverId)
+    .sort((a, b) => (b.trip_date || '').localeCompare(a.trip_date || ''));
+
+  // Stats
+  const total     = rides.length;
+  const completed = rides.filter(r => r.status === 'completed').length;
+  const active    = rides.filter(r => ['confirmed','in_progress'].includes(r.status)).length;
+  const revenue   = rides
+    .filter(r => ['paid','confirmed','in_progress','completed'].includes(r.status))
+    .reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+
+  document.getElementById('recapTotal').textContent     = total;
+  document.getElementById('recapCompleted').textContent = completed;
+  document.getElementById('recapActive').textContent    = active;
+  document.getElementById('recapRevenue').textContent   = revenue.toFixed(0) + ' €';
+
+  // Table
+  const tbody = document.getElementById('recapTable');
+  if (!rides.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Aucune course assignée</td></tr>';
+  } else {
+    tbody.innerHTML = rides.map(r => `
+      <tr>
+        <td><span class="booking-ref">${r.booking_ref || '—'}</span></td>
+        <td>${fmtDate(r.trip_date)}<br><span style="color:var(--text-muted);font-size:11px">${r.trip_time || ''}</span></td>
+        <td style="font-size:12.5px">${r.from_location || '—'}<span class="route-arrow">→</span>${r.to_location || '—'}</td>
+        <td style="font-size:12.5px">${r.pax || 1} / ${r.bags || 0}</td>
+        <td>${badge(r.status)}</td>
+        <td class="amount-cell">${r.amount != null ? r.amount + ' €' : '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('recapModal').classList.add('open');
+}
+
+function closeRecap() {
+  document.getElementById('recapModal').classList.remove('open');
+}
+
+document.getElementById('recapModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('recapModal')) closeRecap();
+});
 
 // ══════════════════════════════════════
 //  INIT
