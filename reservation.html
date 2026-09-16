@@ -389,7 +389,16 @@
       </div>
       <div class="mform-group">
         <label>N° de vol ou de train <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
-        <input type="text" name="flight_number" placeholder="Ex : AF1234, TGV 6203…" />
+        <input type="text" name="flight_number" placeholder="Ex : AF1234, TGV 6203…"
+               id="flightInput"
+               oninput="document.getElementById('flightHint').style.display='none'"
+               onblur="if(!this.value.trim())document.getElementById('flightHint').style.display='flex'" />
+        <div id="flightHint" style="display:none;align-items:flex-start;gap:8px;margin-top:8px;background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:10px 12px;">
+          <span style="font-size:18px;flex-shrink:0;line-height:1.2">⚠️</span>
+          <span style="font-size:0.85rem;color:#92400e;line-height:1.45">
+            <strong>Vivement recommandé</strong> — Le numéro de vol ou de train nous permet de suivre les retards et d'adapter l'heure de prise en charge en conséquence. Sans cette information, votre chauffeur ne pourra pas anticiper les aléas.
+          </span>
+        </div>
       </div>
       <div class="mform-group">
         <label>Équipements enfants <span style="color:var(--gray);font-weight:400">(facultatif)</span></label>
