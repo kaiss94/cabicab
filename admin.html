@@ -402,6 +402,16 @@
     }
 
     .btn-add:hover { background: var(--navy-light); }
+    .price-input {
+      width: 80px; text-align: center; border: 1px solid #d1d5db;
+      border-radius: 6px; padding: 5px 8px; font-size: 14px;
+      font-family: inherit; transition: border-color .2s;
+    }
+    .price-input:focus { outline: none; border-color: var(--navy); background: #f0f4ff; }
+    #priceTable td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; }
+    #priceTable td:first-child { padding-left: 16px; font-size: 14px; color: #374151; }
+    #priceTable td:not(:first-child) { text-align: center; }
+    #priceTable tbody tr:hover { background: #f8fafc; }
 
     /* ───────── SIDE PANEL ───────── */
     .panel-overlay {
@@ -770,6 +780,9 @@
       <div class="nav-item" id="nav-drivers" onclick="showTab('drivers')">
         <span class="nav-icon">🚗</span> Chauffeurs
       </div>
+      <div class="nav-item" id="nav-tarifs" onclick="showTab('tarifs')">
+        <span class="nav-icon">💶</span> Tarifs
+      </div>
     </aside>
 
     <!-- Main content -->
@@ -895,6 +908,37 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ── Tarifs ── -->
+      <div class="tab-section" id="tab-tarifs">
+        <div class="page-title">Grille tarifaire</div>
+        <div class="table-card">
+          <div class="table-header">
+            <h2>Prix par trajet et par véhicule</h2>
+            <div style="display:flex;gap:10px">
+              <button class="btn-add" onclick="savePriceGrid()" style="background:#16a34a">💾 Enregistrer</button>
+              <button class="btn-add" onclick="resetPriceGrid()" style="background:#6b7280">↺ Réinitialiser</button>
+            </div>
+          </div>
+          <div id="tarifs-saved-msg" style="display:none;padding:10px 20px;background:#dcfce7;color:#166534;font-size:13px;font-weight:600;border-bottom:1px solid #bbf7d0">
+            ✅ Tarifs enregistrés avec succès.
+          </div>
+          <div style="overflow-x:auto">
+            <table id="priceTable" style="min-width:520px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:12px 16px;min-width:220px">Trajet</th>
+                  <th style="text-align:center;padding:12px 10px;min-width:110px">🚗 Berline (€)</th>
+                  <th style="text-align:center;padding:12px 10px;min-width:110px">🚙 SUV (€)</th>
+                  <th style="text-align:center;padding:12px 10px;min-width:110px">🚐 VAN (€)</th>
+                </tr>
+              </thead>
+              <tbody id="priceTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <p style="padding:14px 20px 0;font-size:12px;color:#888">Les prix sont stockés localement sur ce navigateur. Ils s'appliquent immédiatement au simulateur de réservation.</p>
       </div>
 
     </main>
@@ -1199,6 +1243,45 @@ function showTab(tab) {
 
   if (tab === 'reservations') renderReservations(allReservations);
   if (tab === 'drivers')      renderDrivers(allDrivers);
+  if (tab === 'tarifs')       renderPriceGrid();
+}
+
+// ══════════════════════════════════════
+//  GRILLE TARIFAIRE
+// ══════════════════════════════════════
+function renderPriceGrid() {
+  const prices = getPrices();
+  const tbody = document.getElementById('priceTableBody');
+  tbody.innerHTML = Object.entries(ROUTE_LABELS).map(([key, label]) => {
+    const row = prices[key] || DEFAULT_PRICES[key] || { b: 0, s: 0, v: 0 };
+    return `<tr>
+      <td>${label}</td>
+      <td><input class="price-input" type="number" min="0" step="1" data-key="${key}" data-col="b" value="${row.b ?? ''}"></td>
+      <td><input class="price-input" type="number" min="0" step="1" data-key="${key}" data-col="s" value="${row.s ?? ''}"></td>
+      <td><input class="price-input" type="number" min="0" step="1" data-key="${key}" data-col="v" value="${row.v ?? ''}"></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tarifs-saved-msg').style.display = 'none';
+}
+
+function savePriceGrid() {
+  const updated = {};
+  document.querySelectorAll('#priceTableBody .price-input').forEach(inp => {
+    const key = inp.dataset.key;
+    const col = inp.dataset.col;
+    if (!updated[key]) updated[key] = {};
+    updated[key][col] = parseFloat(inp.value) || 0;
+  });
+  savePrices(updated);
+  const msg = document.getElementById('tarifs-saved-msg');
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+function resetPriceGrid() {
+  if (!confirm('Remettre tous les tarifs aux valeurs par défaut ?')) return;
+  resetPrices();
+  renderPriceGrid();
 }
 
 // ══════════════════════════════════════
