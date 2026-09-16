@@ -723,6 +723,61 @@
       display: none;
     }
 
+    /* ───────── BOTTOM NAV MOBILE ───────── */
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--navy);
+      height: 60px;
+      z-index: 200;
+      box-shadow: 0 -2px 12px rgba(0,0,0,.25);
+      align-items: stretch;
+    }
+    .bnav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      color: rgba(255,255,255,.55);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      transition: color .15s, background .15s;
+      border: none;
+      background: none;
+      padding: 0;
+      position: relative;
+    }
+    .bnav-item .bnav-icon { font-size: 20px; line-height: 1; }
+    .bnav-item.active { color: var(--gold); }
+    .bnav-item.active::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 0 0 3px 3px;
+    }
+    .bnav-badge {
+      position: absolute;
+      top: 6px; right: calc(50% - 18px);
+      background: #ef4444;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      min-width: 16px;
+      height: 16px;
+      line-height: 16px;
+      text-align: center;
+      border-radius: 8px;
+      padding: 0 3px;
+      display: none;
+    }
+
     /* ───────── RESPONSIVE ───────── */
     @media (max-width: 900px) {
       .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -730,10 +785,11 @@
 
     @media (max-width: 680px) {
       .adm-sidebar { display: none; }
-      .adm-main { margin-left: 0; padding: 16px; }
+      .adm-main { margin-left: 0; padding: 16px; padding-bottom: 76px; }
       .side-panel { width: 100%; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .adm-header .logo { font-size: 16px; }
+      .bottom-nav { display: flex; }
     }
   </style>
 </head>
@@ -764,6 +820,27 @@
     <span class="header-email" id="headerEmail"></span>
     <button class="btn-logout" onclick="logout()">Déconnexion</button>
   </header>
+
+  <!-- Bottom navigation (mobile only) -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bnav-item active" id="bnav-dashboard" onclick="showTab('dashboard')">
+      <span class="bnav-icon">📊</span>
+      <span>Tableau</span>
+    </button>
+    <button class="bnav-item" id="bnav-reservations" onclick="showTab('reservations')">
+      <span class="bnav-icon">📋</span>
+      <span>Réservations</span>
+      <span class="bnav-badge" id="bnavBadgePending"></span>
+    </button>
+    <button class="bnav-item" id="bnav-drivers" onclick="showTab('drivers')">
+      <span class="bnav-icon">🚗</span>
+      <span>Chauffeurs</span>
+    </button>
+    <button class="bnav-item" id="bnav-tarifs" onclick="showTab('tarifs')">
+      <span class="bnav-icon">💶</span>
+      <span>Tarifs</span>
+    </button>
+  </nav>
 
   <div class="adm-body">
 
@@ -1238,8 +1315,11 @@ sb.auth.onAuthStateChange((event) => {
 function showTab(tab) {
   document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('nav-' + tab).classList.add('active');
+  const bnavEl = document.getElementById('bnav-' + tab);
+  if (bnavEl) bnavEl.classList.add('active');
 
   if (tab === 'reservations') renderReservations(allReservations);
   if (tab === 'drivers')      renderDrivers(allDrivers);
@@ -1522,13 +1602,16 @@ function loadStats() {
   document.getElementById('statPending').textContent   = pendingCount;
   document.getElementById('statCompleted').textContent = completedCount;
 
-  // Badge on sidebar
-  const badge = document.getElementById('badgePending');
+  // Badge sidebar + bottom nav
+  const badge     = document.getElementById('badgePending');
+  const bnavBadge = document.getElementById('bnavBadgePending');
   if (pendingCount > 0) {
     badge.textContent = pendingCount;
     badge.style.display = 'inline';
+    if (bnavBadge) { bnavBadge.textContent = pendingCount; bnavBadge.style.display = 'block'; }
   } else {
     badge.style.display = 'none';
+    if (bnavBadge) bnavBadge.style.display = 'none';
   }
 }
 
