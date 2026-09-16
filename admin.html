@@ -1247,13 +1247,100 @@ function showTab(tab) {
 }
 
 // ══════════════════════════════════════
-//  GRILLE TARIFAIRE
+//  GRILLE TARIFAIRE — données locales
 // ══════════════════════════════════════
-function renderPriceGrid() {
-  const prices = getPrices();
+const ADMIN_DEFAULT_PRICES = {
+  'PARIS-CDG':         { b: 55,  s: 70,  v: 95  },
+  'PARIS-ORLY':        { b: 45,  s: 58,  v: 80  },
+  'PARIS-BEAUVAIS':    { b: 110, s: 135, v: 170 },
+  'CDG-ORLY':          { b: 80,  s: 95,  v: 120 },
+  'PARIS-DISNEY':      { b: 65,  s: 80,  v: 110 },
+  'PARIS-ASTERIX':     { b: 85,  s: 100, v: 130 },
+  'CDG-DISNEY':        { b: 55,  s: 68,  v: 90  },
+  'CDG-ASTERIX':       { b: 45,  s: 58,  v: 78  },
+  'ORLY-DISNEY':       { b: 70,  s: 88,  v: 115 },
+  'ORLY-ASTERIX':      { b: 95,  s: 118, v: 155 },
+  'BEAUVAIS-DISNEY':   { b: 115, s: 140, v: 185 },
+  'BEAUVAIS-ASTERIX':  { b: 90,  s: 110, v: 145 },
+  'PARIS-VERSAILLES':  { b: 60,  s: 75,  v: 95  },
+  'PARIS-LADEFENSE':   { b: 45,  s: 58,  v: 75  },
+  'PARIS-GARE':        { b: 35,  s: 45,  v: 60  },
+  'PARIS-PARIS':       { b: 25,  s: 35,  v: 50  },
+  'PARIS-DEP92':       { b: 45,  s: 58,  v: 80  },
+  'PARIS-DEP93':       { b: 50,  s: 65,  v: 88  },
+  'PARIS-DEP94':       { b: 48,  s: 62,  v: 85  },
+  'PARIS-DEP77':       { b: 70,  s: 88,  v: 115 },
+  'PARIS-DEP78':       { b: 60,  s: 75,  v: 100 },
+  'PARIS-DEP91':       { b: 65,  s: 82,  v: 108 },
+  'PARIS-DEP95':       { b: 55,  s: 70,  v: 92  },
+};
+const ADMIN_ROUTE_LABELS = {
+  'PARIS-CDG':        'Paris ↔ CDG (Roissy)',
+  'PARIS-ORLY':       'Paris ↔ Orly',
+  'PARIS-BEAUVAIS':   'Paris ↔ Beauvais',
+  'CDG-ORLY':         'CDG ↔ Orly',
+  'PARIS-DISNEY':     'Paris ↔ Disneyland',
+  'PARIS-ASTERIX':    'Paris ↔ Parc Astérix',
+  'CDG-DISNEY':       'CDG ↔ Disneyland',
+  'CDG-ASTERIX':      'CDG ↔ Parc Astérix',
+  'ORLY-DISNEY':      'Orly ↔ Disneyland',
+  'ORLY-ASTERIX':     'Orly ↔ Parc Astérix',
+  'BEAUVAIS-DISNEY':  'Beauvais ↔ Disneyland',
+  'BEAUVAIS-ASTERIX': 'Beauvais ↔ Parc Astérix',
+  'PARIS-VERSAILLES': 'Paris ↔ Versailles',
+  'PARIS-LADEFENSE':  'Paris ↔ La Défense',
+  'PARIS-GARE':       'Paris ↔ Gares parisiennes',
+  'PARIS-PARIS':      'Paris ↔ Paris (intra-muros)',
+  'PARIS-DEP92':      'Paris ↔ Hauts-de-Seine (92)',
+  'PARIS-DEP93':      'Paris ↔ Seine-Saint-Denis (93)',
+  'PARIS-DEP94':      'Paris ↔ Val-de-Marne (94)',
+  'PARIS-DEP77':      'Paris ↔ Seine-et-Marne (77)',
+  'PARIS-DEP78':      'Paris ↔ Yvelines (78)',
+  'PARIS-DEP91':      'Paris ↔ Essonne (91)',
+  'PARIS-DEP95':      "Paris ↔ Val-d'Oise (95)",
+};
+// Prix courants chargés depuis le serveur (mis en cache localement)
+let _adminPricesCache = null;
+
+async function adminLoadPrices() {
+  try {
+    const res = await fetch('/api/get-prices');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && !data.error) {
+        _adminPricesCache = { ...ADMIN_DEFAULT_PRICES, ...data };
+        return _adminPricesCache;
+      }
+    }
+  } catch (e) { console.warn('adminLoadPrices:', e.message); }
+  _adminPricesCache = { ...ADMIN_DEFAULT_PRICES };
+  return _adminPricesCache;
+}
+
+async function adminSavePricesAPI(prices) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session?.access_token) throw new Error('Non authentifié');
+  const res = await fetch('/api/save-prices', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + session.access_token,
+    },
+    body: JSON.stringify(prices),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Erreur serveur');
+  }
+  return res.json();
+}
+
+async function renderPriceGrid() {
   const tbody = document.getElementById('priceTableBody');
-  tbody.innerHTML = Object.entries(ROUTE_LABELS).map(([key, label]) => {
-    const row = prices[key] || DEFAULT_PRICES[key] || { b: 0, s: 0, v: 0 };
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:16px;color:#6b7280">Chargement…</td></tr>';
+  const prices = await adminLoadPrices();
+  tbody.innerHTML = Object.entries(ADMIN_ROUTE_LABELS).map(([key, label]) => {
+    const row = prices[key] || ADMIN_DEFAULT_PRICES[key] || { b: 0, s: 0, v: 0 };
     return `<tr>
       <td>${label}</td>
       <td><input class="price-input" type="number" min="0" step="1" data-key="${key}" data-col="b" value="${row.b ?? ''}"></td>
@@ -1264,7 +1351,7 @@ function renderPriceGrid() {
   document.getElementById('tarifs-saved-msg').style.display = 'none';
 }
 
-function savePriceGrid() {
+async function savePriceGrid() {
   const updated = {};
   document.querySelectorAll('#priceTableBody .price-input').forEach(inp => {
     const key = inp.dataset.key;
@@ -1272,16 +1359,31 @@ function savePriceGrid() {
     if (!updated[key]) updated[key] = {};
     updated[key][col] = parseFloat(inp.value) || 0;
   });
-  savePrices(updated);
-  const msg = document.getElementById('tarifs-saved-msg');
-  msg.style.display = 'block';
-  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+  const btn = document.getElementById('saveBtn');
+  const origText = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Enregistrement…'; }
+  try {
+    await adminSavePricesAPI(updated);
+    _adminPricesCache = { ...ADMIN_DEFAULT_PRICES, ...updated };
+    const msg = document.getElementById('tarifs-saved-msg');
+    msg.style.display = 'block';
+    setTimeout(() => { msg.style.display = 'none'; }, 3000);
+  } catch (e) {
+    alert('❌ Erreur : ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origText; }
+  }
 }
 
-function resetPriceGrid() {
-  if (!confirm('Remettre tous les tarifs aux valeurs par défaut ?')) return;
-  resetPrices();
-  renderPriceGrid();
+async function resetPriceGrid() {
+  if (!confirm('Remettre tous les tarifs aux valeurs par défaut ? Cette action est irréversible.')) return;
+  try {
+    await adminSavePricesAPI(ADMIN_DEFAULT_PRICES);
+    _adminPricesCache = { ...ADMIN_DEFAULT_PRICES };
+    renderPriceGrid();
+  } catch (e) {
+    alert('❌ Erreur : ' + e.message);
+  }
 }
 
 // ══════════════════════════════════════

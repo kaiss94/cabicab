@@ -1547,6 +1547,9 @@
     });
     window.location.href = 'reservation.html?' + params.toString();
   }
+
+  // Charger les prix serveur au démarrage (met à jour le cache localStorage)
+  fetchPrices().catch(() => {});
 </script>
 
 </body>

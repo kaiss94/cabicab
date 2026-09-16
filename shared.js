@@ -69,7 +69,11 @@ const ROUTE_LABELS = {
   'PARIS-DEP95':      'Paris ↔ Val-d\'Oise (95)',
 };
 
-// ── Gestion des prix (localStorage) ──────────────────────────
+// ── Gestion des prix ──────────────────────────────────────────
+// Les prix sont stockés dans Supabase (source de vérité).
+// fetchPrices() les charge au démarrage et les met en cache localStorage.
+// getPrices() reste synchrone et lit le cache (fallback : DEFAULT_PRICES).
+
 const LS_KEY = 'cabicab_prices';
 
 function getPrices() {
@@ -86,6 +90,27 @@ function savePrices(prices) {
 
 function resetPrices() {
   localStorage.removeItem(LS_KEY);
+}
+
+// Charge les prix depuis l'API et met à jour le cache localStorage.
+// Appelé une fois au chargement des pages front-end.
+// Retourne l'objet prices fusionné (DEFAULT_PRICES + valeurs serveur).
+async function fetchPrices() {
+  try {
+    const res = await fetch('/api/get-prices');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const serverPrices = await res.json();
+    if (serverPrices && typeof serverPrices === 'object' && !serverPrices.error) {
+      // Fusionner avec les défauts et mettre en cache
+      const merged = { ...DEFAULT_PRICES, ...serverPrices };
+      savePrices(merged);
+      return merged;
+    }
+  } catch (e) {
+    console.warn('[CabiCab] Impossible de charger les tarifs depuis le serveur :', e.message);
+  }
+  // Fallback : cache local ou valeurs par défaut
+  return getPrices();
 }
 
 // ── Zones géographiques ───────────────────────────────────────

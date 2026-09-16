@@ -800,7 +800,8 @@ async function submitPayForm(e) {
   }
 }
 
-init();
+// Charger les prix depuis le serveur, puis initialiser la page
+fetchPrices().then(() => init()).catch(() => init());
 </script>
 </body>
 </html>
